@@ -1,0 +1,18 @@
+# Proteger contraseñas
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# React
+node_modules/
+dist/
+
+# Archivos temporales
+*.log
+.vscode/
