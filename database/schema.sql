@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL,
     correo VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255),
     entra_id VARCHAR(255) UNIQUE,
     rol_id INTEGER REFERENCES roles(id),
     departamento_id INTEGER REFERENCES departamentos(id),
