@@ -129,3 +129,15 @@ El proyecto utiliza PostgreSQL para almacenar la información del Dashboard Ejec
 - No publicar contraseñas ni claves secretas.
 - No ejecutar los scripts de inicialización sobre una base de datos con información importante sin revisar previamente sus instrucciones SQL.
 - Para una instalación nueva, crear el primer administrador mediante el script `backend/crear_admin.py`, una vez configurada la base de datos y verificadas las dependencias.
+
+**### Creación del primer administrador**
+
+Después de configurar PostgreSQL, ejecutar `schema.sql` e instalar las dependencias del backend, abrir una terminal en la carpeta principal del proyecto y ejecutar:
+
+```powershell
+python backend/crear_admin.py
+```
+
+El programa solicitará el nombre, correo electrónico y contraseña del administrador inicial. La contraseña se introduce de forma oculta y se almacena mediante un hash seguro.
+
+Por seguridad, el script comprueba si ya existe un usuario con el rol Administrador. Si encuentra uno, no creará otro mediante este procedimiento.
