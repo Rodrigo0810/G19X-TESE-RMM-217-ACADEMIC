@@ -1095,7 +1095,7 @@ const listaActualizada = await respuestaLista.json()
     alert('Indicador actualizado correctamente')
   } catch (error) {
     console.error('Error al actualizar indicador:', error)
-    alert('No se pudo actusssalizar el indicador. Revisa la consola.')
+    alert('No se pudo actualizar el indicador. Revisa la consola.')
   }
 }
 const eliminarRol = async (id) => {
