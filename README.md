@@ -1,4 +1,3 @@
-
 # Dashboard Ejecutivo de Cumplimiento Normativo
 
 ## Descripción del proyecto
@@ -43,10 +42,13 @@ Proyecto académico en desarrollo. Las funcionalidades y configuraciones deben v
 
 ### Requisitos previos
 
-- Python instalado.
-- PostgreSQL instalado y configurado.
+- Python 3.14.7 (versión utilizada y verificada durante el desarrollo).
+- PostgreSQL 18.6 (versión utilizada y verificada).
 - Base de datos `compliance_dashboard` creada.
-- Entorno virtual de Python.
+- Entorno virtual de Python (`venv`).
+- Dependencias del backend especificadas en `backend/requirements.txt`.
+
+**Nota:** Las versiones anteriores corresponden al entorno donde se realizaron las pruebas. No se ha comprobado todavía la compatibilidad con todas las versiones anteriores o posteriores.
 
 ### Configuración
 
@@ -57,31 +59,43 @@ Proyecto académico en desarrollo. Las funcionalidades y configuraciones deben v
 5. Crear el archivo `.env` tomando como referencia `.env.example`.
 6. Configurar las credenciales de PostgreSQL y una clave JWT segura.
 
-### Comandos para iniciar el backend
+### Comandos para preparar e iniciar el backend
 
-Desde la carpeta principal del proyecto:
+Desde la carpeta principal del proyecto, abrir una terminal PowerShell y ejecutar:
 
 ```powershell
 cd backend
+python -m venv venv
 .\venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+```
+
+El comando `python -m venv venv` crea el entorno virtual. Si ya existe y está configurado, no es necesario volver a crearlo.
+
+Antes de iniciar el servidor, comprobar que PostgreSQL esté configurado, que se hayan ejecutado los scripts SQL correspondientes y que el archivo `backend/.env` contenga las variables de conexión y autenticación necesarias.
+
+Para iniciar el backend, ejecutar:
+
+```powershell
 python -m uvicorn main:app --reload
 ```
 
-Cuando el servidor esté funcionando, la documentación interactiva de la API estará disponible en:
+Cuando el servidor esté funcionando, la documentación interactiva estará disponible en:
 
 http://127.0.0.1:8000/docs
-
-**Nota:** el backend requiere que PostgreSQL esté configurado correctamente antes de iniciar.
 
 
 ## Instalación y ejecución del frontend
 
 ### Requisitos previos
 
-- Node.js instalado.
-- npm disponible.
-- Backend configurado y en funcionamiento.
+- Node.js 24.20.0 (versión utilizada y verificada durante el desarrollo).
+- npm instalado y disponible mediante Node.js.
+- React y Vite, cuyas dependencias se encuentran declaradas en `frontend/package.json`.
+- Backend FastAPI configurado y en funcionamiento.
+- Conexión activa con PostgreSQL.
+
+**Nota:** Se verificó que el proyecto compila correctamente utilizando Node.js 24.20.0 y Vite 8.3.2. La compatibilidad con otras versiones no ha sido comprobada durante estas pruebas.
 
 ### Pasos para iniciar el frontend
 
