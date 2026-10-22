@@ -2754,15 +2754,18 @@ return (
   try {
 const response = await fetch('http://127.0.0.1:8000/normativas', {
     method: 'POST',
-    headers: {
-  'Content-Type': 'application/json'
+  headers: {
+  'Content-Type': 'application/json',
+  ...encabezadosAuth
 },
     body: JSON.stringify(nuevaNormativa)
 })
   if (!response.ok) {
   throw new Error('No se pudo guardar la normativa')
 }
-const responseLista = await fetch('http://127.0.0.1:8000/normativas')
+const responseLista = await fetch('http://127.0.0.1:8000/normativas', {
+  headers: encabezadosAuth
+})
   if (!responseLista.ok) {
   throw new Error('Se guardó, pero no se pudo actualizar la tabla')
 }
@@ -2909,8 +2912,9 @@ const response = await fetch(
   `http://127.0.0.1:8000/normativas/${normativaEditando.id}`,
 {
     method: 'PUT',
-    headers: {
-    'Content-Type': 'application/json'
+   headers: {
+  'Content-Type': 'application/json',
+  ...encabezadosAuth
 },
     body: JSON.stringify({
         nombre: normativaEditando.nombre,
@@ -2927,7 +2931,8 @@ const response = await fetch(
   throw new Error('No se pudo actualizar la normativa')
 }
 const responseLista = await fetch(
-  'http://127.0.0.1:8000/normativas'
+  'http://127.0.0.1:8000/normativas',
+  { headers: encabezadosAuth }
 )
   if (!responseLista.ok) {
   throw new Error(
@@ -2983,9 +2988,10 @@ const confirmar = window.confirm(
   if (!confirmar) return
   try {
 const response = await fetch(
-   `http://127.0.0.1:8000/normativas/${normativa.id}`,
-{
-    method: 'DELETE'
+  `http://127.0.0.1:8000/normativas/${normativa.id}`,
+  {
+    method: 'DELETE',
+    headers: encabezadosAuth
   }
 )
   if (!response.ok) {
@@ -2994,7 +3000,8 @@ const response = await fetch(
   )
 }
 const responseLista = await fetch(
-  'http://127.0.0.1:8000/normativas'
+  'http://127.0.0.1:8000/normativas',
+  { headers: encabezadosAuth }
 )
   if (!responseLista.ok) {
     throw new Error(
