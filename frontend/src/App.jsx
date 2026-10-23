@@ -125,6 +125,25 @@ const [nuevaObligacion, setNuevaObligacion] = useState({
 nombre: '',
 estado: 'Pendiente'
 })
+const cumplimientoPorDepartamento = departamentos.map((departamento) => {
+  const obligacionesDepartamento = obligaciones.filter(
+    (obligacion) =>
+      Number(obligacion.departamento_id) === Number(departamento.id)
+  )
+const total = obligacionesDepartamento.length
+const cumplidas = obligacionesDepartamento.filter(
+    (obligacion) => obligacion.estado === 'Cumplida'
+  ).length
+  return {
+    id: departamento.id,
+    nombre: departamento.nombre,
+    total,
+    cumplidas,
+    porcentaje: total > 0
+      ? Math.round((cumplidas / total) * 100)
+      : null
+  }
+})
 const obligacionesFiltradas = obligaciones.filter((obligacion) => {
 const coincideDepartamento =
     filtroDepartamento === '' ||
@@ -1775,6 +1794,24 @@ return (
   <p>
     Obligaciones encontradas: {obligacionesFiltradas.length}
   </p>
+</div>
+<div className="card">
+  <h2>Cumplimiento por departamento</h2>
+<div className="estados-grid">
+{cumplimientoPorDepartamento.map((departamento) => (
+<div className="estado-item" key={departamento.id}>
+  <span>{departamento.nombre}</span>
+  <strong>
+{departamento.porcentaje === null
+      ? 'Sin obligaciones'
+    : `${departamento.porcentaje}%`}
+  </strong>
+  <small>
+{departamento.cumplidas} de {departamento.total} cumplidas
+  </small>
+</div>
+))}
+</div>
 </div>
 <div className="metricas-grid">
 <div className="card">
