@@ -84,6 +84,8 @@ const [nuevaNormativa, setNuevaNormativa] = useState({
   activa: true
 })
 const [vistaActual, setVistaActual] = useState('dashboard')
+const [filtroDepartamento, setFiltroDepartamento] = useState('')
+const [filtroNormativa, setFiltroNormativa] = useState('')
 const [token, setToken] = useState(null)
 const [correoLogin, setCorreoLogin] = useState('')
 const [contrasenaLogin, setContrasenaLogin] = useState('')
@@ -123,16 +125,25 @@ const [nuevaObligacion, setNuevaObligacion] = useState({
 nombre: '',
 estado: 'Pendiente'
 })
-const obligacionesPendientes = obligaciones.filter(
+const obligacionesFiltradas = obligaciones.filter((obligacion) => {
+const coincideDepartamento =
+    filtroDepartamento === '' ||
+    String(obligacion.departamento_id) === filtroDepartamento
+const coincideNormativa =
+    filtroNormativa === '' ||
+    String(obligacion.normativa_id) === filtroNormativa
+  return coincideDepartamento && coincideNormativa
+})
+const obligacionesPendientes = obligacionesFiltradas.filter(
   (obligacion) => obligacion.estado === 'Pendiente'
 ).length
-const obligacionesEnProgreso = obligaciones.filter(
+const obligacionesEnProgreso = obligacionesFiltradas.filter(
   (obligacion) => obligacion.estado === 'En progreso'
 ).length
-const obligacionesCumplidas = obligaciones.filter(
+const obligacionesCumplidas = obligacionesFiltradas.filter(
   (obligacion) => obligacion.estado === 'Cumplida'
 ).length
-const obligacionesVencidas = obligaciones.filter(
+const obligacionesVencidas = obligacionesFiltradas.filter(
   (obligacion) => obligacion.estado === 'Vencida'
 ).length
 const riesgosBajos = riesgos.filter(
@@ -160,8 +171,10 @@ const alertasDescartadas = alertas.filter(
   (alerta) => alerta.estado === 'Descartada'
 ).length
 const porcentajeCumplimiento =
-  obligaciones.length > 0
-    ? Math.round((obligacionesCumplidas / obligaciones.length) * 100)
+  obligacionesFiltradas.length > 0
+    ? Math.round(
+        (obligacionesCumplidas / obligacionesFiltradas.length) * 100
+      )
     : 0
 const auditoriasProgramadas = auditorias.filter(
   (auditoria) => auditoria.estado === 'Programada'
@@ -1675,10 +1688,55 @@ return (
 <main className="dashboard-content">
   {vistaActual === 'dashboard' && (
 <>
+<div className="card">
+  <h2>Filtros del Dashboard Ejecutivo</h2>
+<div className="filtros-dashboard">
+  <label>
+    Departamento
+  <select
+    value={filtroDepartamento}
+    onChange={(e) => setFiltroDepartamento(e.target.value)}
+>
+  <option value="">Todos los departamentos</option>
+{departamentos.map((departamento) => (
+  <option key={departamento.id} value={departamento.id}>
+{departamento.nombre}
+  </option>
+))}
+  </select>
+  </label>
+  <label>
+    Normativa
+  <select
+    value={filtroNormativa}
+    onChange={(e) => setFiltroNormativa(e.target.value)}
+>
+  <option value="">Todas las normativas</option>
+{normativas.map((normativa) => (
+  <option key={normativa.id} value={normativa.id}>
+{normativa.nombre}
+  </option>
+))}
+  </select>
+  </label>
+  <button
+    type="button"
+    onClick={() => {
+      setFiltroDepartamento('')
+      setFiltroNormativa('')
+  }}
+>
+  Limpiar filtros
+  </button>
+</div>
+  <p>
+    Obligaciones encontradas: {obligacionesFiltradas.length}
+  </p>
+</div>
 <div className="metricas-grid">
 <div className="card">
   <h2>Total de obligaciones</h2>
-  <p className="total">{obligaciones.length}</p>
+  <p className="total">{obligacionesFiltradas.length}</p>
 </div> 
 <div className="card">
   <h2>Total de auditorías</h2>
