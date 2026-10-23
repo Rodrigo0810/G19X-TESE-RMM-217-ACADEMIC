@@ -9,10 +9,25 @@ router = APIRouter()
 def listar_obligaciones():
     with engine.connect() as connection:
         resultado = connection.execute(
-            text("SELECT id, nombre, estado, nivel_riesgo FROM obligaciones")
+            text("""
+                SELECT
+                    id,
+                    normativa_id,
+                    departamento_id,
+                    nombre,
+                    descripcion,
+                    responsable,
+                    fecha_limite,
+                    estado,
+                    nivel_riesgo,
+                    fecha_creacion
+                FROM obligaciones
+                ORDER BY id
+            """)
         )
         obligaciones = resultado.mappings().all()
-    return list(obligaciones)
+    return [dict(obligacion) for obligacion in obligaciones]
+
 
 @router.post("/obligaciones", status_code=201)
 def crear_obligacion(obligacion: ObligacionCrear):
