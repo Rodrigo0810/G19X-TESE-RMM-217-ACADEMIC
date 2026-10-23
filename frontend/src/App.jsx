@@ -134,6 +134,49 @@ const coincideNormativa =
     String(obligacion.normativa_id) === filtroNormativa
   return coincideDepartamento && coincideNormativa
 })
+const hoy = new Date()
+hoy.setHours(0, 0, 0, 0)
+const limiteProximos7Dias = new Date(hoy)
+limiteProximos7Dias.setDate(limiteProximos7Dias.getDate() + 7)
+const obtenerFechaLimite = (obligacion) => {
+  if (!obligacion.fecha_limite) return null
+const fechaTexto = String(obligacion.fecha_limite).slice(0, 10)
+const partes = fechaTexto.split('-').map(Number)
+  if (partes.length !== 3 || partes.some(Number.isNaN)) {
+  return null
+  }
+const [anio, mes, dia] = partes
+const fecha = new Date(anio, mes - 1, dia)
+  if (
+    fecha.getFullYear() !== anio ||
+    fecha.getMonth() !== mes - 1 ||
+    fecha.getDate() !== dia
+  ) {
+  return null
+  }
+  return fecha
+}
+const obligacionesVencidasPorFecha = obligacionesFiltradas.filter(
+  (obligacion) => {
+const fecha = obtenerFechaLimite(obligacion)
+    return (
+      fecha !== null &&
+      fecha < hoy &&
+      obligacion.estado !== 'Cumplida'
+    )
+  }
+)
+const obligacionesProximasAVencer = obligacionesFiltradas.filter(
+  (obligacion) => {
+const fecha = obtenerFechaLimite(obligacion)
+  return (
+      fecha !== null &&
+      fecha >= hoy &&
+      fecha <= limiteProximos7Dias &&
+      obligacion.estado !== 'Cumplida'
+    )
+  }
+)
 const obligacionesPendientes = obligacionesFiltradas.filter(
   (obligacion) => obligacion.estado === 'Pendiente'
 ).length
@@ -288,7 +331,7 @@ fetch('http://127.0.0.1:8000/riesgos', {
 })
    .catch((error) => {
     console.error('Error al obtener riesgos:', error)
-})   
+})
 fetch('http://127.0.0.1:8000/alertas', {
   headers: encabezadosAuth
 })
@@ -988,7 +1031,7 @@ const respuesta = await fetch(
    headers: {
     'Content-Type': 'application/json',
      ...encabezadosAuth
-}, 
+},
       body: JSON.stringify({
           nombre: departamentoEditando.nombre,
           descripcion: departamentoEditando.descripcion,
@@ -1737,7 +1780,7 @@ return (
 <div className="card">
   <h2>Total de obligaciones</h2>
   <p className="total">{obligacionesFiltradas.length}</p>
-</div> 
+</div>
 <div className="card">
   <h2>Total de auditorías</h2>
   <p className="total">{auditorias.length}</p>
@@ -1903,7 +1946,6 @@ return (
   </ResponsiveContainer>
 </div>
 </div>
-
 <div className="card">
     <h2>Distribución de riesgos</h2>
   <div style={{ width: '100%', height: 300 }}>
@@ -1918,61 +1960,58 @@ return (
       outerRadius={100}
       label={({ name, value }) => `${name}: ${value}`}
 >
-  {datosRiesgos.map((entrada, index) => (
+{datosRiesgos.map((entrada, index) => (
     <Cell
     key={`riesgo-${index}`}
     fill={coloresRiesgos[index]}
 />
 ))}
-    </Pie>
-    <Tooltip />
-    <Legend />
-    </PieChart>
-    </ResponsiveContainer>
-    </div>
-    </div>
-    </div>
-
-  <div className="card">
-    <h2>Niveles de riesgo</h2>
-  <div className="estados-grid">
-  <div className="estado-item">
-    <span>Bajo</span>
-    <strong>{riesgosBajos}</strong>
-  </div>
-  <div className="estado-item">
-    <span>Medio</span>
-    <strong>{riesgosMedios}</strong>
-  </div>
-  <div className="estado-item">
-    <span>Alto</span>
-    <strong>{riesgosAltos}</strong>
-  </div>
-  <div className="estado-item">
-    <span>Crítico</span>
-    <strong>{riesgosCriticos}</strong>
+  </Pie>
+  <Tooltip />
+  <Legend />
+  </PieChart>
+  </ResponsiveContainer>
 </div>
 </div>
 </div>
-       
-  <div className="card">
-    <h2>Estado de alertas</h2>
-    <div className="estados-grid">
-    <div className="estado-item">
-    <span>Pendientes</span>
-    <strong>{alertasPendientes}</strong>
-  </div>
-  <div className="estado-item">
-    <span>Atendidas</span>
-    <strong>{alertasAtendidas}</strong>
-  </div>
-  <div className="estado-item">
-    <span>Descartadas</span>
-    <strong>{alertasDescartadas}</strong>
+<div className="card">
+  <h2>Niveles de riesgo</h2>
+<div className="estados-grid">
+<div className="estado-item">
+  <span>Bajo</span>
+  <strong>{riesgosBajos}</strong>
+</div>
+<div className="estado-item">
+  <span>Medio</span>
+  <strong>{riesgosMedios}</strong>
+</div>
+<div className="estado-item">
+  <span>Alto</span>
+  <strong>{riesgosAltos}</strong>
+</div>
+<div className="estado-item">
+  <span>Crítico</span>
+  <strong>{riesgosCriticos}</strong>
 </div>
 </div>
 </div>
-
+<div className="card">
+  <h2>Estado de alertas</h2>
+<div className="estados-grid">
+<div className="estado-item">
+  <span>Pendientes</span>
+  <strong>{alertasPendientes}</strong>
+</div>
+<div className="estado-item">
+  <span>Atendidas</span>
+  <strong>{alertasAtendidas}</strong>
+</div>
+<div className="estado-item">
+  <span>Descartadas</span>
+  <strong>{alertasDescartadas}</strong>
+</div>
+</div>
+</div>
 <div className="card">
   <h2>Distribución de alertas</h2>
 <div style={{ width: '100%', height: 300 }}>
@@ -1989,9 +2028,8 @@ return (
 />
   </BarChart>
   </ResponsiveContainer>
-  </div>
 </div>
-
+</div>
 {riesgosImportantes > 0 && (
 <div className="alerta-ejecutiva">
   <strong>⚠ Atención requerida</strong>
@@ -2001,19 +2039,42 @@ return (
   </p>
 </div>
 )}
-{obligacionesVencidas > 0 && (
+{obligacionesVencidasPorFecha.length > 0 && (
 <div className="alerta-ejecutiva">
-  <strong>⚠ Obligaciones vencidas</strong>
+  <strong>⚠ Obligaciones vencidas por fecha</strong>
   <p>
-    Se detectaron {obligacionesVencidas} obligación(es) vencida(s)
-    que requieren atención.
+    Se detectaron {obligacionesVencidasPorFecha.length} obligación(es)
+    cuya fecha límite ya pasó y que requieren atención.
   </p>
+  <ul>
+{obligacionesVencidasPorFecha.map((obligacion) => (
+  <li key={obligacion.id}>
+{obligacion.nombre} — Fecha límite: {String(obligacion.fecha_limite).slice(0, 10)}
+  </li>
+))}
+  </ul>
 </div>
-)}     
+)}
+{obligacionesProximasAVencer.length > 0 && (
+<div className="alerta-ejecutiva">
+  <strong>⚠ Obligaciones próximas a vencer</strong>
+  <p>
+    Se detectaron {obligacionesProximasAVencer.length} obligación(es)
+    que vencen durante los próximos 7 días.
+  </p>
+  <ul>
+{obligacionesProximasAVencer.map((obligacion) => (
+  <li key={obligacion.id}>
+{obligacion.nombre} — Fecha límite: {String(obligacion.fecha_limite).slice(0, 10)}
+  </li>
+))}
+  </ul>
+</div>
+)}
 <div className="card">
   <h2>Obligaciones registradas</h2>
   <ul className="obligaciones-lista">
-{obligaciones.map((obligacion) => (
+{obligacionesFiltradas.map((obligacion) => (
   <li key={obligacion.id}>
   <strong>{obligacion.nombre}</strong>
   <span className={`estado-badge estado-${obligacion.estado.toLowerCase().replace(' ', '-')}`}>
@@ -2216,7 +2277,7 @@ return (
 </div>
 </div>
 
-)}  
+)}
 {auditoriaEditando && (
 <div className="formulario-edicion">
   <h3>Editar auditoría</h3>
@@ -3012,7 +3073,7 @@ const data = await responseLista.json()
 </div>
 </div>
 )}
-  
+
 <table className="tabla-datos">
   <thead>
     <tr>
@@ -3942,7 +4003,7 @@ const data = await responseLista.json()
   {mostrarFormularioNuevoUsuario && (
 <div className="formulario-edicion">
   <h3>Registrar nuevo usuario</h3>
-<div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center' }}>  
+<div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center' }}>
   <label>Nombre</label>
   <input
     type="text"
