@@ -155,3 +155,19 @@ python backend/crear_admin.py
 El programa solicitará el nombre, correo electrónico y contraseña del administrador inicial. La contraseña se introduce de forma oculta y se almacena mediante un hash seguro.
 
 Por seguridad, el script comprueba si ya existe un usuario con el rol Administrador. Si encuentra uno, no creará otro mediante este procedimiento.
+
+## Configuración de la URL del backend
+
+El frontend utiliza la variable de entorno `VITE_API_URL` para configurar la dirección de la API desarrollada con FastAPI.
+
+Para configurar una dirección personalizada, crear un archivo `.env` dentro de la carpeta `frontend` con el siguiente contenido:
+
+```env
+VITE_API_URL=http://127.0.0.1:8000
+```
+
+Si no se configura esta variable, el frontend utilizará automáticamente `http://127.0.0.1:8000`.
+
+Después de modificar el archivo `.env`, es necesario reiniciar el servidor de desarrollo de Vite para aplicar los cambios.
+
+Por seguridad, no deben almacenarse contraseñas, tokens privados ni claves secretas en variables que comiencen con `VITE_`, ya que pueden quedar expuestas en el navegador.
