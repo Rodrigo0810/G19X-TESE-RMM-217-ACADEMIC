@@ -12,6 +12,7 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import './App.css'
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
 function App() {
 const [obligaciones, setObligaciones] = useState([])
@@ -311,7 +312,7 @@ const datosAlertas = [
 
 useEffect(() => {
 if (!token) return
-fetch('http://127.0.0.1:8000/obligaciones', {
+fetch(`${API_URL}/obligaciones`, {
   headers: encabezadosAuth
 })
    .then((response) => response.json())
@@ -321,7 +322,7 @@ fetch('http://127.0.0.1:8000/obligaciones', {
    .catch((error) => {
    console.error('Error al obtener obligaciones:', error)
 })
-fetch('http://127.0.0.1:8000/auditorias', {
+fetch(`${API_URL}/auditorias`, {
   headers: encabezadosAuth
 })
    .then((response) => response.json())
@@ -331,7 +332,7 @@ fetch('http://127.0.0.1:8000/auditorias', {
    .catch((error) => {
     console.error('Error al obtener auditorias:', error)
 })
-fetch('http://127.0.0.1:8000/controles', {
+fetch(`${API_URL}/controles`, {
   headers: encabezadosAuth
 })
    .then((response) => response.json())
@@ -341,7 +342,7 @@ fetch('http://127.0.0.1:8000/controles', {
    .catch((error) => {
     console.error('Error al obtener controles:', error)
 })
-fetch('http://127.0.0.1:8000/riesgos', {
+fetch(`${API_URL}/riesgos`, {
   headers: encabezadosAuth
 })
    .then((response) => response.json())
@@ -351,7 +352,7 @@ fetch('http://127.0.0.1:8000/riesgos', {
    .catch((error) => {
     console.error('Error al obtener riesgos:', error)
 })
-fetch('http://127.0.0.1:8000/alertas', {
+fetch(`${API_URL}/alertas`, {
   headers: encabezadosAuth
 })
    .then((response) => response.json())
@@ -361,7 +362,7 @@ fetch('http://127.0.0.1:8000/alertas', {
    .catch((error) => {
     console.error('Error al obtener alertas:', error)
 })
-fetch('http://127.0.0.1:8000/normativas', {
+fetch(`${API_URL}/normativas`, {
   headers: encabezadosAuth
 })
   .then((response) => {
@@ -376,7 +377,7 @@ fetch('http://127.0.0.1:8000/normativas', {
   .catch((error) => {
     console.error('Error al obtener normativas:', error)
   })
-fetch('http://127.0.0.1:8000/indicadores', {
+fetch(`${API_URL}/indicadores`, {
   headers: encabezadosAuth
 })
   .then((respuesta) => {
@@ -391,7 +392,7 @@ fetch('http://127.0.0.1:8000/indicadores', {
   .catch((error) => {
     console.error('Error al cargar indicadores:', error)
   })
-fetch('http://127.0.0.1:8000/roles', {
+fetch(`${API_URL}/roles`, {
   headers: encabezadosAuth
 })
    .then((respuesta) => {
@@ -406,7 +407,7 @@ fetch('http://127.0.0.1:8000/roles', {
    .catch((error) => {
     console.error('Error al cargar roles:', error)
 })
-fetch('http://127.0.0.1:8000/usuarios', {
+fetch(`${API_URL}/usuarios`, {
   headers: encabezadosAuth
 })
   .then((respuesta) => {
@@ -422,7 +423,7 @@ fetch('http://127.0.0.1:8000/usuarios', {
     console.error('Error al cargar usuarios:', error)
   })
 
-fetch('http://127.0.0.1:8000/evidencias', {
+fetch(`${API_URL}/evidencias`, {
   headers: encabezadosAuth
 })
   .then((response) => {
@@ -437,7 +438,7 @@ fetch('http://127.0.0.1:8000/evidencias', {
   .catch((error) => {
     console.error('Error al obtener evidencias:', error)
   })
-fetch('http://127.0.0.1:8000/departamentos', {
+fetch(`${API_URL}/departamentos`, {
   headers: encabezadosAuth
 })
   .then((response) => {
@@ -457,7 +458,7 @@ const iniciarSesion = async (e) => {
   e.preventDefault()
   setErrorLogin('')
   try {
-  const respuesta = await fetch('http://127.0.0.1:8000/auth/login', {
+  const respuesta = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -495,7 +496,7 @@ const confirmar = window.confirm(
 }
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/obligaciones/${id}`,
+  `${API_URL}/obligaciones/${id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -522,7 +523,7 @@ if (!confirmar) {
 }
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/auditorias/${id}`,
+  `${API_URL}/auditorias/${id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -547,7 +548,7 @@ const crearObligacion = async () => {
   }
   try {
 const respuesta = await fetch(
-    'http://127.0.0.1:8000/obligaciones',
+    `${API_URL}/obligaciones`,
 {
     method: 'POST',
 headers: {
@@ -583,7 +584,7 @@ const guardarEdicionObligacion = async () => {
 }
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/obligaciones/${obligacionEditando.id}`,
+  `${API_URL}/obligaciones/${obligacionEditando.id}`,
   {
     method: 'PUT',
     headers: {
@@ -617,7 +618,7 @@ const guardarEdicionAuditoria = async () => {
   }
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/auditorias/${auditoriaEditando.id}`,
+  `${API_URL}/auditorias/${auditoriaEditando.id}`,
   {
     method: 'PUT',
     headers: {
@@ -653,7 +654,7 @@ const crearAuditoria = async () => {
   }
   try {
 const respuesta = await fetch(
-  'http://127.0.0.1:8000/auditorias',
+  `${API_URL}/auditorias`,
   {
     method: 'POST',
     headers: {
@@ -689,7 +690,7 @@ const guardarEdicionControl = async () => {
 }
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/controles/${controlEditando.id}`,
+  `${API_URL}/controles/${controlEditando.id}`,
   {
     method: 'PUT',
     headers: {
@@ -725,7 +726,7 @@ const confirmar = window.confirm(
   if (!confirmar) return
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/controles/${id}`,
+  `${API_URL}/controles/${id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -753,7 +754,7 @@ const crearControl = async () => {
   }
   try {
 const respuesta = await fetch(
-  'http://127.0.0.1:8000/controles',
+  `${API_URL}/controles`,
   {
     method: 'POST',
     headers: {
@@ -793,7 +794,7 @@ const guardarEdicionRiesgo = async () => {
 }
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/riesgos/${riesgoEditando.id}`,
+  `${API_URL}/riesgos/${riesgoEditando.id}`,
   {
     method: 'PUT',
     headers: {
@@ -829,7 +830,7 @@ const confirmar = window.confirm(
   if (!confirmar) return
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/riesgos/${id}`,
+  `${API_URL}/riesgos/${id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -857,7 +858,7 @@ const crearRiesgo = async () => {
   }
   try {
 const respuesta = await fetch(
-  'http://127.0.0.1:8000/riesgos',
+  `${API_URL}/riesgos`,
   {
     method: 'POST',
     headers: {
@@ -898,7 +899,7 @@ const guardarEdicionAlerta = async () => {
   }
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/alertas/${alertaEditando.id}`,
+  `${API_URL}/alertas/${alertaEditando.id}`,
   {
     method: 'PUT',
     headers: {
@@ -934,7 +935,7 @@ const confirmar = window.confirm(
   if (!confirmar) return
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/alertas/${id}`,
+  `${API_URL}/alertas/${id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -962,7 +963,7 @@ const crearAlerta = async () => {
   }
   try {
 const respuesta = await fetch(
-  'http://127.0.0.1:8000/alertas',
+  `${API_URL}/alertas`,
   {
     method: 'POST',
     headers: {
@@ -999,7 +1000,7 @@ const crearDepartamento = async () => {
   }
   try {
 const respuesta = await fetch(
-  'http://127.0.0.1:8000/departamentos',
+  `${API_URL}/departamentos`,
   {
     method: 'POST',
     headers: {
@@ -1014,7 +1015,7 @@ const detalle = await respuesta.text()
   throw new Error(detalle)
 }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/departamentos',
+  `${API_URL}/departamentos`,
   {
     headers: encabezadosAuth
   }
@@ -1044,7 +1045,7 @@ const guardarEdicionDepartamento = async () => {
   }
   try {
 const respuesta = await fetch(
-   `http://127.0.0.1:8000/departamentos/${departamentoEditando.id}`,
+   `${API_URL}/departamentos/${departamentoEditando.id}`,
 {
    method: 'PUT',
    headers: {
@@ -1063,7 +1064,7 @@ const detalle = await respuesta.text()
   throw new Error(detalle)
 }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/departamentos',
+  `${API_URL}/departamentos`,
   {
     headers: encabezadosAuth
   }
@@ -1087,7 +1088,7 @@ const confirmar = window.confirm(
   if (!confirmar) return
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/indicadores/${id}`,
+  `${API_URL}/indicadores/${id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -1098,7 +1099,7 @@ const detalle = await respuesta.text()
       throw new Error(detalle)
 }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/indicadores',
+  `${API_URL}/indicadores`,
   {
     headers: encabezadosAuth
   }
@@ -1133,7 +1134,7 @@ const actualizarIndicador = async () => {
   }
   try {
 const respuesta = await fetch(
-      `http://127.0.0.1:8000/indicadores/${indicadorEditando.id}`,
+      `${API_URL}/indicadores/${indicadorEditando.id}`,
 {
    method: 'PUT',
    headers: {
@@ -1156,7 +1157,7 @@ const detalle = await respuesta.text()
     throw new Error(detalle)
 }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/indicadores',
+  `${API_URL}/indicadores`,
   {
     headers: encabezadosAuth
   }
@@ -1180,7 +1181,7 @@ const confirmar = window.confirm(
   if (!confirmar) return
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/roles/${id}`,
+  `${API_URL}/roles/${id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -1212,7 +1213,7 @@ const guardarEdicionRol = async () => {
   }
   try {
 const respuesta = await fetch(
-      `http://127.0.0.1:8000/roles/${rolEditando.id}`,
+      `${API_URL}/roles/${rolEditando.id}`,
 {
    method: 'PUT',
    headers: {
@@ -1230,7 +1231,7 @@ const detalle = await respuesta.text()
     throw new Error(detalle)
 }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/roles',
+  `${API_URL}/roles`,
   {
     headers: encabezadosAuth
   }
@@ -1254,7 +1255,7 @@ const eliminarUsuario = async (id) => {
   if (!confirmar) return
    try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/usuarios/${id}`,
+  `${API_URL}/usuarios/${id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -1264,7 +1265,7 @@ const respuesta = await fetch(
     throw new Error('Error al eliminar el usuario')
 }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/usuarios',
+  `${API_URL}/usuarios`,
   {
     headers: encabezadosAuth
   }
@@ -1287,7 +1288,7 @@ const actualizarUsuario = async () => {
   }
 try {
 const respuesta = await fetch(
-    `http://127.0.0.1:8000/usuarios/${usuarioEditando.id}`,
+    `${API_URL}/usuarios/${usuarioEditando.id}`,
 {
    method: 'PUT',
    headers: {
@@ -1308,7 +1309,7 @@ const respuesta = await fetch(
       throw new Error('Error al actualizar el usuario')
     }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/usuarios',
+  `${API_URL}/usuarios`,
   {
     headers: encabezadosAuth
   }
@@ -1331,7 +1332,7 @@ const crearUsuario = async () => {
     return
   }
   try {
-const respuesta = await fetch('http://127.0.0.1:8000/usuarios', {
+const respuesta = await fetch(`${API_URL}/usuarios`, {
     method: 'POST',
     headers: {
      'Content-Type': 'application/json',
@@ -1345,7 +1346,7 @@ const detalle = await respuesta.text()
     throw new Error(detalle)
     }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/usuarios',
+  `${API_URL}/usuarios`,
   {
     headers: encabezadosAuth
   }
@@ -1377,7 +1378,7 @@ const crearRol = async () => {
   }
   try {
 const respuesta = await fetch(
-    'http://127.0.0.1:8000/roles',
+    `${API_URL}/roles`,
 {
    method: 'POST',
    headers: {
@@ -1392,7 +1393,7 @@ const detalle = await respuesta.text()
     throw new Error(detalle)
 }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/roles',
+  `${API_URL}/roles`,
   {
     headers: encabezadosAuth
   }
@@ -1429,7 +1430,7 @@ const crearIndicador = async () => {
   }
   try {
 const respuesta = await fetch(
-    'http://127.0.0.1:8000/indicadores',
+    `${API_URL}/indicadores`,
 {
    method: 'POST',
    headers: {
@@ -1449,7 +1450,7 @@ const detalle = await respuesta.text()
    throw new Error(detalle)
     }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/indicadores',
+  `${API_URL}/indicadores`,
   {
     headers: encabezadosAuth
   }
@@ -1482,7 +1483,7 @@ const crearEvidencia = async () => {
   }
   try {
 const respuesta = await fetch(
-  'http://127.0.0.1:8000/evidencias',
+  `${API_URL}/evidencias`,
 {
    method: 'POST',
    headers: {
@@ -1500,7 +1501,7 @@ const detalle = await respuesta.text()
   throw new Error(detalle)
 }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/evidencias',
+  `${API_URL}/evidencias`,
   {
     headers: encabezadosAuth
   }
@@ -1536,7 +1537,7 @@ const guardarEdicionEvidencia = async () => {
   }
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/evidencias/${evidenciaEditando.id}`,
+  `${API_URL}/evidencias/${evidenciaEditando.id}`,
 {
    method: 'PUT',
    headers: {
@@ -1554,7 +1555,7 @@ const detalle = await respuesta.text()
   throw new Error(detalle)
 }
 const respuestaLista = await fetch(
-  'http://127.0.0.1:8000/evidencias',
+  `${API_URL}/evidencias`,
   {
     headers: encabezadosAuth
   }
@@ -1578,7 +1579,7 @@ const confirmar = window.confirm(
   if (!confirmar) return
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/evidencias/${id}`,
+  `${API_URL}/evidencias/${id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -1607,7 +1608,7 @@ const confirmar = window.confirm(
   if (!confirmar) return
   try {
 const respuesta = await fetch(
-  `http://127.0.0.1:8000/departamentos/${id}`,
+  `${API_URL}/departamentos/${id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -2908,7 +2909,7 @@ return (
       return
 }
   try {
-const response = await fetch('http://127.0.0.1:8000/normativas', {
+const response = await fetch(`${API_URL}/normativas`, {
     method: 'POST',
   headers: {
   'Content-Type': 'application/json',
@@ -2919,7 +2920,7 @@ const response = await fetch('http://127.0.0.1:8000/normativas', {
   if (!response.ok) {
   throw new Error('No se pudo guardar la normativa')
 }
-const responseLista = await fetch('http://127.0.0.1:8000/normativas', {
+const responseLista = await fetch(`${API_URL}/normativas`, {
   headers: encabezadosAuth
 })
   if (!responseLista.ok) {
@@ -3065,7 +3066,7 @@ const data = await responseLista.json()
 }
   try {
 const response = await fetch(
-  `http://127.0.0.1:8000/normativas/${normativaEditando.id}`,
+  `${API_URL}/normativas/${normativaEditando.id}`,
 {
     method: 'PUT',
    headers: {
@@ -3087,7 +3088,7 @@ const response = await fetch(
   throw new Error('No se pudo actualizar la normativa')
 }
 const responseLista = await fetch(
-  'http://127.0.0.1:8000/normativas',
+  `${API_URL}/normativas`,
   { headers: encabezadosAuth }
 )
   if (!responseLista.ok) {
@@ -3144,7 +3145,7 @@ const confirmar = window.confirm(
   if (!confirmar) return
   try {
 const response = await fetch(
-  `http://127.0.0.1:8000/normativas/${normativa.id}`,
+  `${API_URL}/normativas/${normativa.id}`,
   {
     method: 'DELETE',
     headers: encabezadosAuth
@@ -3156,7 +3157,7 @@ const response = await fetch(
   )
 }
 const responseLista = await fetch(
-  'http://127.0.0.1:8000/normativas',
+  `${API_URL}/normativas`,
   { headers: encabezadosAuth }
 )
   if (!responseLista.ok) {
