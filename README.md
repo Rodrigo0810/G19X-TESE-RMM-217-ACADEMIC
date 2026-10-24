@@ -1,4 +1,4 @@
-# Dashboard Ejecutivo de Cumplimiento Normativo
+﻿# Dashboard Ejecutivo de Cumplimiento Normativo
 
 ## Descripción del proyecto
 
@@ -30,7 +30,7 @@ También incorpora un panel ejecutivo con indicadores y gráficas que facilitan 
 - `backend/`: API REST, autenticación y lógica del servidor.
 - `frontend/`: interfaz web y dashboard ejecutivo.
 - `database/`: scripts SQL para la base de datos.
-- `docker/`: archivos relacionados con Docker.
+- `backend/.env.example`: plantilla de configuración del backend.
 - `README.md`: documentación principal del proyecto.
 
 ## Estado del proyecto
