@@ -123,37 +123,37 @@ const [nuevaAuditoria, setNuevaAuditoria] = useState({
 })
 const [mostrarFormularioNuevo, setMostrarFormularioNuevo] = useState(false)
 const [nuevaObligacion, setNuevaObligacion] = useState({
-nombre: '',
-estado: 'Pendiente'
-})
-const cumplimientoPorDepartamento = departamentos.map((departamento) => {
-  const obligacionesDepartamento = obligaciones.filter(
-    (obligacion) =>
-      Number(obligacion.departamento_id) === Number(departamento.id)
-  )
-const total = obligacionesDepartamento.length
-const cumplidas = obligacionesDepartamento.filter(
-    (obligacion) => obligacion.estado === 'Cumplida'
-  ).length
-  return {
-    id: departamento.id,
-    nombre: departamento.nombre,
-    total,
-    cumplidas,
-    porcentaje: total > 0
-      ? Math.round((cumplidas / total) * 100)
-      : null
-  }
+  nombre: '',
+  estado: 'Pendiente',
+  departamento_id: null,
+  normativa_id: null
 })
 const obligacionesFiltradas = obligaciones.filter((obligacion) => {
-const coincideDepartamento =
-    filtroDepartamento === '' ||
+  const coincideDepartamento = filtroDepartamento === '' ||
     String(obligacion.departamento_id) === filtroDepartamento
-const coincideNormativa =
-    filtroNormativa === '' ||
+  const coincideNormativa = filtroNormativa === '' ||
     String(obligacion.normativa_id) === filtroNormativa
   return coincideDepartamento && coincideNormativa
 })
+const cumplimientoPorDepartamento = departamentos
+  .filter((departamento) => filtroDepartamento === '' || String(departamento.id) === filtroDepartamento)
+  .map((departamento) => {
+    const obligacionesDepartamento = obligacionesFiltradas.filter(
+      (obligacion) => obligacion.departamento_id != null &&
+        String(obligacion.departamento_id) === String(departamento.id)
+    )
+    const total = obligacionesDepartamento.length
+    const cumplidas = obligacionesDepartamento.filter(
+      (obligacion) => obligacion.estado === 'Cumplida'
+    ).length
+    return {
+      id: departamento.id,
+      nombre: departamento.nombre,
+      total,
+      cumplidas,
+      porcentaje: total > 0 ? Math.round((cumplidas / total) * 100) : null
+    }
+  })
 const hoy = new Date()
 hoy.setHours(0, 0, 0, 0)
 const limiteProximos7Dias = new Date(hoy)
@@ -209,28 +209,73 @@ const obligacionesCumplidas = obligacionesFiltradas.filter(
 const obligacionesVencidas = obligacionesFiltradas.filter(
   (obligacion) => obligacion.estado === 'Vencida'
 ).length
-const riesgosBajos = riesgos.filter(
+// Filtrado conservador: cada relación explícita debe ser compatible con el filtro.
+// Un registro sin relaciones verificables no se atribuye a una selección.
+const hayFiltrosDashboard = filtroDepartamento !== '' || filtroNormativa !== ''
+const obligacionesPorId = new Map(obligaciones.map((item) => [String(item.id), item]))
+const auditoriasPorId = new Map(auditorias.map((item) => [String(item.id), item]))
+const controlesPorId = new Map(controles.map((item) => [String(item.id), item]))
+const riesgosPorId = new Map(riesgos.map((item) => [String(item.id), item]))
+const coincideObligacion = (obligacion) => Boolean(obligacion) &&
+  (filtroDepartamento === '' || String(obligacion.departamento_id) === filtroDepartamento) &&
+  (filtroNormativa === '' || String(obligacion.normativa_id) === filtroNormativa)
+const coincideAuditoria = (auditoria) => Boolean(auditoria) &&
+  filtroNormativa === '' &&
+  (filtroDepartamento === '' || String(auditoria.departamento_id) === filtroDepartamento)
+const coincideControl = (control) => {
+  if (!control) return false
+  const obligacion = control.obligacion_id == null
+    ? null : obligacionesPorId.get(String(control.obligacion_id))
+  if (control.obligacion_id != null && !coincideObligacion(obligacion)) return false
+  if (filtroDepartamento !== '') {
+    if (control.departamento_id != null && String(control.departamento_id) !== filtroDepartamento) return false
+    if (control.departamento_id == null && !obligacion) return false
+  }
+  if (filtroNormativa !== '' && !obligacion) return false
+  return true
+}
+const coincideRiesgo = (riesgo) => {
+  if (!riesgo) return false
+  const relaciones = [
+    riesgo.obligacion_id != null ? coincideObligacion(obligacionesPorId.get(String(riesgo.obligacion_id))) : null,
+    riesgo.auditoria_id != null ? coincideAuditoria(auditoriasPorId.get(String(riesgo.auditoria_id))) : null,
+    riesgo.control_id != null ? coincideControl(controlesPorId.get(String(riesgo.control_id))) : null
+  ].filter((resultado) => resultado !== null)
+  return relaciones.length > 0 && relaciones.every(Boolean)
+}
+const auditoriasFiltradas = auditorias.filter((item) => !hayFiltrosDashboard || coincideAuditoria(item))
+const controlesFiltrados = controles.filter((item) => !hayFiltrosDashboard || coincideControl(item))
+const riesgosFiltrados = riesgos.filter((item) => !hayFiltrosDashboard || coincideRiesgo(item))
+const alertasFiltradas = alertas.filter((alerta) => {
+  if (!hayFiltrosDashboard) return true
+  const relaciones = [
+    alerta.obligacion_id != null ? coincideObligacion(obligacionesPorId.get(String(alerta.obligacion_id))) : null,
+    alerta.riesgo_id != null ? coincideRiesgo(riesgosPorId.get(String(alerta.riesgo_id))) : null
+  ].filter((resultado) => resultado !== null)
+  return relaciones.length > 0 && relaciones.every(Boolean)
+})
+const riesgosBajos = riesgosFiltrados.filter(
   (riesgo) => riesgo.nivel === 'Bajo'
 ).length
-const riesgosMedios = riesgos.filter(
+const riesgosMedios = riesgosFiltrados.filter(
   (riesgo) => riesgo.nivel === 'Medio'
 ).length
-const riesgosAltos = riesgos.filter(
+const riesgosAltos = riesgosFiltrados.filter(
   (riesgo) => riesgo.nivel === 'Alto'
 ).length
-const riesgosCriticos = riesgos.filter(
+const riesgosCriticos = riesgosFiltrados.filter(
   (riesgo) => riesgo.nivel === 'Critico'
 ).length
-const riesgosImportantes = riesgos.filter(
+const riesgosImportantes = riesgosFiltrados.filter(
   (riesgo) => riesgo.nivel === 'Alto' || riesgo.nivel === 'Critico'
 ).length
-const alertasPendientes = alertas.filter(
+const alertasPendientes = alertasFiltradas.filter(
   (alerta) => alerta.estado === 'Pendiente'
 ).length
-const alertasAtendidas = alertas.filter(
+const alertasAtendidas = alertasFiltradas.filter(
   (alerta) => alerta.estado === 'Atendida'
 ).length
-const alertasDescartadas = alertas.filter(
+const alertasDescartadas = alertasFiltradas.filter(
   (alerta) => alerta.estado === 'Descartada'
 ).length
 const porcentajeCumplimiento =
@@ -239,35 +284,44 @@ const porcentajeCumplimiento =
         (obligacionesCumplidas / obligacionesFiltradas.length) * 100
       )
     : 0
-const auditoriasProgramadas = auditorias.filter(
+const auditoriasProgramadas = auditoriasFiltradas.filter(
   (auditoria) => auditoria.estado === 'Programada'
 ).length
-const auditoriasEnProgreso = auditorias.filter(
+const auditoriasEnProgreso = auditoriasFiltradas.filter(
   (auditoria) => auditoria.estado === 'En progreso'
 ).length
-const auditoriasCompletadas = auditorias.filter(
+const auditoriasCompletadas = auditoriasFiltradas.filter(
   (auditoria) => auditoria.estado === 'Completada'
 ).length
-const auditoriasCanceladas = auditorias.filter(
+const auditoriasCanceladas = auditoriasFiltradas.filter(
   (auditoria) => auditoria.estado === 'Cancelada'
 ).length
-const controlesPendientes = controles.filter(
+const controlesPendientes = controlesFiltrados.filter(
   (control) => control.estado === 'Pendiente'
 ).length
-const controlesEnProgreso = controles.filter(
+const controlesEnProgreso = controlesFiltrados.filter(
   (control) => control.estado === 'En progreso'
 ).length
-const controlesImplementados = controles.filter(
+const controlesImplementados = controlesFiltrados.filter(
   (control) => control.estado === 'Implementado'
 ).length
-const controlesFallidos = controles.filter(
+const controlesFallidos = controlesFiltrados.filter(
+  (control) => control.estado === 'Fallido'
+).length
+const riesgosImportantesFiltrados = riesgosFiltrados.filter(
+  (riesgo) => riesgo.nivel === 'Alto' || riesgo.nivel === 'Critico'
+).length
+const alertasPendientesFiltradas = alertasFiltradas.filter(
+  (alerta) => alerta.estado === 'Pendiente'
+).length
+const controlesFallidosFiltrados = controlesFiltrados.filter(
   (control) => control.estado === 'Fallido'
 ).length
 const totalIncidenciasCriticas =
   obligacionesVencidas +
-  riesgosImportantes +
-  alertasPendientes +
-  controlesFallidos
+  riesgosImportantesFiltrados +
+  alertasPendientesFiltradas +
+  controlesFallidosFiltrados
 const datosObligaciones = [
   { name: 'Pendientes', value: obligacionesPendientes },
   { name: 'En progreso', value: obligacionesEnProgreso },
@@ -316,8 +370,8 @@ fetch(`${API_URL}/obligaciones`, {
   headers: encabezadosAuth
 })
    .then((response) => response.json())
-   .then((data) => {
-      setObligaciones(data)
+  .then((data) => {
+  setObligaciones(data)
 })
    .catch((error) => {
    console.error('Error al obtener obligaciones:', error)
@@ -569,7 +623,9 @@ const obligacionCreada = await respuesta.json()
 ])
     setNuevaObligacion({
       nombre: '',
-      estado: 'Pendiente'
+      estado: 'Pendiente',
+      departamento_id: null,
+      normativa_id: null
 })
     setMostrarFormularioNuevo(false)
     alert('Obligación registrada correctamente')
@@ -1821,19 +1877,19 @@ return (
 </div>
 <div className="card">
   <h2>Total de auditorías</h2>
-  <p className="total">{auditorias.length}</p>
+  <p className="total">{auditoriasFiltradas.length}</p>
 </div>
 <div className="card">
   <h2>Total de controles</h2>
-  <p className="total">{controles.length}</p>
+  <p className="total">{controlesFiltrados.length}</p>
 </div>
 <div className="card">
   <h2>Total de riesgos</h2>
-  <p className="total">{riesgos.length}</p>
+  <p className="total">{riesgosFiltrados.length}</p>
 </div>
 <div className="card">
   <h2>Total de alertas</h2>
-  <p className="total">{alertas.length}</p>
+  <p className="total">{alertasFiltradas.length}</p>
 </div>
 <div className="card">
   <h2>Cumplimiento</h2>
@@ -2166,6 +2222,45 @@ return (
   <option value="Vencida">Vencida</option>
   </select>
 
+  <label>Departamento</label>
+  <select
+    value={nuevaObligacion.departamento_id ?? ''}
+    onChange={(e) =>
+      setNuevaObligacion({
+      ...nuevaObligacion,
+      departamento_id: e.target.value === ''
+        ? null
+        : Number(e.target.value)
+    })
+  }
+>
+  <option value="">Sin departamento asignado</option>
+{departamentos.map((departamento) => (
+  <option key={departamento.id} value={departamento.id}>
+{departamento.nombre}
+  </option>
+  ))}
+  </select>
+  <label>Normativa</label>
+  <select
+    value={nuevaObligacion.normativa_id ?? ''}
+    onChange={(e) =>
+      setNuevaObligacion({
+      ...nuevaObligacion,
+      normativa_id: e.target.value === ''
+        ? null
+        : Number(e.target.value)
+    })
+  }
+>
+  <option value="">Sin normativa asignada</option>
+{normativas.map((normativa) => (
+  <option key={normativa.id} value={normativa.id}>
+{normativa.nombre}
+  </option>
+))}
+  </select>
+
 <div className="botones-formulario">
   <button
    className="btn-guardar"
@@ -2212,6 +2307,45 @@ return (
   <option value="En progreso">En progreso</option>
   <option value="Cumplida">Cumplida</option>
   <option value="Vencida">Vencida</option>
+  </select>
+
+  <label>Departamento</label>
+  <select
+    value={obligacionEditando.departamento_id ?? ''}
+    onChange={(e) =>
+      setObligacionEditando({
+      ...obligacionEditando,
+      departamento_id: e.target.value === ''
+        ? null
+        : Number(e.target.value)
+    })
+  }
+>
+<option value="">Sin departamento asignado</option>
+{departamentos.map((departamento) => (
+  <option key={departamento.id} value={departamento.id}>
+{departamento.nombre}
+  </option>
+))}
+  </select>
+  <label>Normativa</label>
+  <select
+    value={obligacionEditando.normativa_id ?? ''}
+    onChange={(e) =>
+      setObligacionEditando({
+      ...obligacionEditando,
+      normativa_id: e.target.value === ''
+        ? null
+        : Number(e.target.value)
+    })
+  }
+>
+  <option value="">Sin normativa asignada</option>
+{normativas.map((normativa) => (
+  <option key={normativa.id} value={normativa.id}>
+{normativa.nombre}
+  </option>
+))}
   </select>
   <button
     className="btn-guardar"
