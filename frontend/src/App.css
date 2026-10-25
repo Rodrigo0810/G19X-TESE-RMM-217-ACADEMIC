@@ -989,3 +989,46 @@
 .dashboard-content::-webkit-scrollbar-thumb:hover {
   background: #64748b;
 }
+.btn-limpiar-filtros {
+  align-self: center;
+margin-top: 0;
+  margin-left: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-limpiar-filtros:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+}
+.btn-limpiar-filtros:active {
+  transform: translateY(0);
+}
+.filtros-dashboard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.filtros-dashboard label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.filtros-dashboard .btn-limpiar-filtros {
+  margin-left: 0;
+  margin-top: 0;
+  align-self: center;
+}
