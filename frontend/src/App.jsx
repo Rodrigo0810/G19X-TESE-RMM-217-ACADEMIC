@@ -1863,14 +1863,15 @@ return (
   </select>
   </label>
   <button
-    type="button"
-    onClick={() => {
-      setFiltroDepartamento('')
-      setFiltroNormativa('')
+  type="button"
+  className="btn-limpiar-filtros"
+  onClick={() => {
+    setFiltroDepartamento('')
+    setFiltroNormativa('')
   }}
 >
-  Limpiar filtros
-  </button>
+  <span></span> Limpiar filtros
+</button>
 </div>
   <p>
     Obligaciones encontradas: {obligacionesFiltradas.length}
@@ -4430,25 +4431,37 @@ const data = await responseLista.json()
   <td>{usuario.correo}</td>
   <td>{usuario.rol_id}</td>
   <td>{usuario.departamento_id}</td>
-  <td>{usuario.activo ? 'Activo' : 'Inactivo'}</td>
-  <td>
-  <button
-    className="btn-editar"
-    onClick={() => {
-     setUsuarioEditando({ ...usuario })
-     setMostrarFormularioNuevoUsuario(false)
-}}
+ <td>{usuario.activo ? 'Activo' : 'Inactivo'}</td>
+
+<td>
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: '12px',
+      flexWrap: 'nowrap'
+    }}
   >
-  Editar
-  </button>
-  <button
-    className="btn-eliminar"
-    onClick={() => eliminarUsuario(usuario.id)}
-  >
-    Eliminar
-  </button>
+    <button
+      className="btn-editar"
+      onClick={() => {
+        setUsuarioEditando({ ...usuario })
+        setMostrarFormularioNuevoUsuario(false)
+      }}
+    >
+      Editar
+    </button>
+
+    <button
+      className="btn-eliminar"
+      onClick={() => eliminarUsuario(usuario.id)}
+    >
+      Eliminar
+    </button>
+  </div>
 </td>
-  </tr>
+</tr>
 ))}
   </tbody>
   </table>
