@@ -35,8 +35,31 @@ También incorpora un panel ejecutivo con indicadores y gráficas que facilitan 
 
 ## Estado del proyecto
 
-Proyecto académico en desarrollo. Las funcionalidades y configuraciones deben verificarse durante las pruebas de instalación y ejecución.
+El Dashboard Ejecutivo de Cumplimiento Normativo cuenta con sus principales funcionalidades implementadas y se encuentra en etapa de preparación para la entrega académica.
 
+Se comprobó el inicio de sesión, la seguridad mediante JWT, los permisos de administrador, el funcionamiento de los módulos de Obligaciones y Auditorías, y la creación y persistencia de controles.
+
+También se verificó que los indicadores reflejan correctamente la creación y eliminación de obligaciones.
+
+El frontend compiló correctamente con Vite 8.3.2, sin errores de compilación.
+
+### Seguridad implementada y verificada
+
+- Autenticación mediante JWT.
+- Rechazo de tokens inválidos y expirados.
+- Permisos de administrador.
+- Contraseñas protegidas mediante Argon2.
+- Variables sensibles protegidas mediante archivos de entorno.
+- Protección del último administrador activo, comprobada a nivel de función.
+
+### Pruebas funcionales realizadas
+
+- Inicio de sesión y visualización del dashboard.
+- Creación, consulta, edición y eliminación de obligaciones.
+- Creación, consulta, edición y eliminación de auditorías.
+- Creación y persistencia de controles.
+- Actualización de indicadores al crear y eliminar obligaciones.
+- Compilación correcta del frontend.
 
 ## Instalación y ejecución del backend
 
