@@ -27,6 +27,7 @@ const [mostrarFormularioNuevoUsuario, setMostrarFormularioNuevoUsuario] = useSta
 const [nuevoUsuario, setNuevoUsuario] = useState({
   nombre: '',
   correo: '',
+  contrasena: '',
   entra_id: '',
   rol_id: null,
   departamento_id: null,
@@ -88,6 +89,7 @@ const [vistaActual, setVistaActual] = useState('dashboard')
 const [filtroDepartamento, setFiltroDepartamento] = useState('')
 const [filtroNormativa, setFiltroNormativa] = useState('')
 const [token, setToken] = useState(null)
+const [esAdministrador, setEsAdministrador] = useState(false)
 const [correoLogin, setCorreoLogin] = useState('')
 const [contrasenaLogin, setContrasenaLogin] = useState('')
 const [errorLogin, setErrorLogin] = useState('')
@@ -446,37 +448,38 @@ fetch(`${API_URL}/indicadores`, {
   .catch((error) => {
     console.error('Error al cargar indicadores:', error)
   })
-fetch(`${API_URL}/roles`, {
-  headers: encabezadosAuth
-})
-   .then((respuesta) => {
-    if (!respuesta.ok) {
-    throw new Error('Error al obtener los roles')
-}
-    return respuesta.json()
-})
+if (esAdministrador) {
+  fetch(`${API_URL}/roles`, {
+    headers: encabezadosAuth
+  })
+    .then((respuesta) => {
+      if (!respuesta.ok) {
+        throw new Error('Error al obtener los roles')
+      }
+      return respuesta.json()
+    })
     .then((datos) => {
-    setRoles(datos)
-})
-   .catch((error) => {
-    console.error('Error al cargar roles:', error)
-})
-fetch(`${API_URL}/usuarios`, {
-  headers: encabezadosAuth
-})
-  .then((respuesta) => {
-    if (!respuesta.ok) {
-      throw new Error('Error al obtener usuarios')
-    }
-    return respuesta.json()
+      setRoles(datos)
+    })
+    .catch((error) => {
+      console.error('Error al cargar roles:', error)
+    })
+  fetch(`${API_URL}/usuarios`, {
+    headers: encabezadosAuth
   })
-  .then((datos) => {
-    setUsuarios(datos)
-  })
-  .catch((error) => {
-    console.error('Error al cargar usuarios:', error)
-  })
-
+    .then((respuesta) => {
+      if (!respuesta.ok) {
+        throw new Error('Error al obtener usuarios')
+      }
+      return respuesta.json()
+    })
+    .then((datos) => {
+      setUsuarios(datos)
+    })
+    .catch((error) => {
+      console.error('Error al cargar usuarios:', error)
+    })
+}
 fetch(`${API_URL}/evidencias`, {
   headers: encabezadosAuth
 })
@@ -507,7 +510,7 @@ fetch(`${API_URL}/departamentos`, {
   .catch((error) => {
     console.error('Error al obtener departamentos:', error)
   })
-}, [token])
+}, [token, esAdministrador])
 const iniciarSesion = async (e) => {
   e.preventDefault()
   setErrorLogin('')
@@ -527,8 +530,19 @@ const iniciarSesion = async (e) => {
     return
 }
 const datos = await respuesta.json()
-    setToken(datos.access_token)
-    setContrasenaLogin('')
+const respuestaPerfil = await fetch(`${API_URL}/auth/verificar`, {
+  headers: {
+    Authorization: `Bearer ${datos.access_token}`
+  }
+})
+if (!respuestaPerfil.ok) {
+  setErrorLogin('No se pudieron verificar los permisos del usuario')
+  return
+}
+const perfil = await respuestaPerfil.json()
+setEsAdministrador(perfil.es_administrador === true)
+setToken(datos.access_token)
+setContrasenaLogin('')
   } catch (error) {
     console.error('Error al iniciar sesión:', error)
     setErrorLogin('No se pudo conectar con el servidor')
@@ -536,6 +550,7 @@ const datos = await respuesta.json()
 }
 const cerrarSesion = () => {
   setToken(null)
+  setEsAdministrador(false)
   setCorreoLogin('')
   setContrasenaLogin('')
   setErrorLogin('')
@@ -1387,6 +1402,10 @@ const crearUsuario = async () => {
     alert('Escribe el nombre y correo del usuario')
     return
   }
+  if (nuevoUsuario.contrasena.length < 12 || nuevoUsuario.contrasena.length > 128) {
+    alert('La contraseña debe tener entre 12 y 128 caracteres')
+    return
+  }
   try {
 const respuesta = await fetch(`${API_URL}/usuarios`, {
     method: 'POST',
@@ -1415,6 +1434,7 @@ const listaActualizada = await respuestaLista.json()
     setNuevoUsuario({
       nombre: '',
       correo: '',
+      contrasena: '',
       entra_id: '',
       rol_id: null,
       departamento_id: null,
@@ -1790,18 +1810,22 @@ return (
 >
   Indicadores
   </button>
- <button
-  className={vistaActual === 'roles' ? 'nav-activo' : ''}
-  onClick={() => setVistaActual('roles')}
->
-  Roles
- </button>
- <button
-  className={vistaActual === 'usuarios' ? 'nav-activo' : ''}
-  onClick={() => setVistaActual('usuarios')}
->
-  Usuarios
-</button>
+ {esAdministrador && (
+  <>
+    <button
+      className={vistaActual === 'roles' ? 'nav-activo' : ''}
+      onClick={() => setVistaActual('roles')}
+    >
+      Roles
+    </button>
+    <button
+      className={vistaActual === 'usuarios' ? 'nav-activo' : ''}
+      onClick={() => setVistaActual('usuarios')}
+    >
+      Usuarios
+    </button>
+  </>
+)}
 </nav>
 
 <main className="dashboard-content">
@@ -4026,7 +4050,7 @@ const data = await responseLista.json()
   </table>
 </div>
 )}
-{vistaActual === 'roles' && (
+{esAdministrador && vistaActual === 'roles' && (
 <div className="card">
   <h2>Gestión de roles</h2>
   <p>Aquí se administrarán los roles de los usuarios del sistema.</p>
@@ -4162,7 +4186,7 @@ const data = await responseLista.json()
   </table>
 </div>
 )}
-{vistaActual === 'usuarios' && (
+{esAdministrador && vistaActual === 'usuarios' && (
 <div className="card">
   <h2>Gestión de usuarios</h2>
   <p>Aquí se administrarán los usuarios registrados en el sistema.</p>
@@ -4197,6 +4221,17 @@ const data = await responseLista.json()
         correo: e.target.value
      })
    }
+/>
+<label>Contraseña inicial (12 a 128 caracteres)</label>
+<input
+  type="password"
+  value={nuevoUsuario.contrasena}
+  minLength={12}
+  maxLength={128}
+  autoComplete="new-password"
+  onChange={(e) =>
+    setNuevoUsuario({ ...nuevoUsuario, contrasena: e.target.value })
+  }
 />
   <label>ID de Microsoft Entra</label>
   <input
@@ -4419,7 +4454,6 @@ const data = await responseLista.json()
   </table>
 </div>
 )}
-
   </main>
 </div>
 )

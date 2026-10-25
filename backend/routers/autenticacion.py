@@ -49,9 +49,39 @@ def autenticar_usuario(correo: str, contrasena: str):
 def verificar_acceso(
     usuario_id: int = Depends(obtener_usuario_id)
 ):
+    with engine.connect() as connection:
+        usuario = connection.execute(
+            text("""
+                SELECT
+                    u.id,
+                    u.nombre,
+                    u.correo,
+                    u.rol_id,
+                    r.nombre AS rol
+                FROM usuarios u
+                LEFT JOIN roles r ON u.rol_id = r.id
+                WHERE u.id = :usuario_id
+            """),
+            {"usuario_id": usuario_id}
+        ).mappings().first()
+
+    if usuario is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuario no encontrado"
+        )
+
     return {
         "mensaje": "Acceso autorizado",
-        "usuario_id": usuario_id
+        "usuario_id": usuario["id"],
+        "nombre": usuario["nombre"],
+        "correo": usuario["correo"],
+        "rol_id": usuario["rol_id"],
+        "rol": usuario["rol"],
+        "es_administrador": (
+            (usuario["rol"] or "").strip().lower()
+            == "administrador"
+        )
     }
 
 @router.post("/auth/login")
