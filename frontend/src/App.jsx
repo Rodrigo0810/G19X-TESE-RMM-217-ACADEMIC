@@ -128,7 +128,9 @@ const [nuevaObligacion, setNuevaObligacion] = useState({
   nombre: '',
   estado: 'Pendiente',
   departamento_id: null,
-  normativa_id: null
+  normativa_id: null,
+  fecha_limite: '',
+  responsable: ''
 })
 const obligacionesFiltradas = obligaciones.filter((obligacion) => {
   const coincideDepartamento = filtroDepartamento === '' ||
@@ -624,7 +626,10 @@ headers: {
   'Content-Type': 'application/json',
   ...encabezadosAuth
 },
-    body: JSON.stringify(nuevaObligacion)
+    body: JSON.stringify({
+      ...nuevaObligacion,
+      fecha_limite: nuevaObligacion.fecha_limite || null
+    })
 }
   )
 if (!respuesta.ok) {
@@ -640,7 +645,9 @@ const obligacionCreada = await respuesta.json()
       nombre: '',
       estado: 'Pendiente',
       departamento_id: null,
-      normativa_id: null
+      normativa_id: null,
+  fecha_limite: '',
+  responsable: ''
 })
     setMostrarFormularioNuevo(false)
     alert('Obligación registrada correctamente')
@@ -662,7 +669,10 @@ const respuesta = await fetch(
       'Content-Type': 'application/json',
       ...encabezadosAuth
     },
-    body: JSON.stringify(obligacionEditando)
+    body: JSON.stringify({
+      ...obligacionEditando,
+      fecha_limite: obligacionEditando.fecha_limite || null
+    })
   }
 )
   if (!respuesta.ok) {
@@ -2247,6 +2257,30 @@ return (
   <option value="Vencida">Vencida</option>
   </select>
 
+  <label>Fecha límite</label>
+  <input
+    type="date"
+    value={nuevaObligacion.fecha_limite ?? ''}
+    onChange={(e) =>
+      setNuevaObligacion({
+        ...nuevaObligacion,
+        fecha_limite: e.target.value
+      })
+    }
+  />
+  <label>Responsable</label>
+  <input
+    type="text"
+    maxLength={150}
+    placeholder="Nombre del responsable (opcional)"
+    value={nuevaObligacion.responsable ?? ''}
+    onChange={(e) =>
+      setNuevaObligacion({
+        ...nuevaObligacion,
+        responsable: e.target.value
+      })
+    }
+  />
   <label>Departamento</label>
   <select
     value={nuevaObligacion.departamento_id ?? ''}
@@ -2334,6 +2368,30 @@ return (
   <option value="Vencida">Vencida</option>
   </select>
 
+  <label>Fecha límite</label>
+  <input
+    type="date"
+    value={String(obligacionEditando.fecha_limite || '').slice(0, 10)}
+    onChange={(e) =>
+      setObligacionEditando({
+        ...obligacionEditando,
+        fecha_limite: e.target.value
+      })
+    }
+  />
+  <label>Responsable</label>
+  <input
+    type="text"
+    maxLength={150}
+    placeholder="Nombre del responsable (opcional)"
+    value={obligacionEditando.responsable ?? ''}
+    onChange={(e) =>
+      setObligacionEditando({
+        ...obligacionEditando,
+        responsable: e.target.value
+      })
+    }
+  />
   <label>Departamento</label>
   <select
     value={obligacionEditando.departamento_id ?? ''}
@@ -2386,6 +2444,7 @@ return (
     <th>ID</th>
     <th>Obligación</th>
     <th>Estado</th>
+    <th>Fecha límite</th>
     <th>Acciones</th>
     </tr>
   </thead>
@@ -2395,6 +2454,7 @@ return (
     <td>{obligacion.id}</td>
     <td>{obligacion.nombre}</td>
     <td>{obligacion.estado}</td>
+    <td>{obligacion.fecha_limite ? String(obligacion.fecha_limite).slice(0, 10) : 'Sin fecha asignada'}</td>
     <td>
   <button
     className="btn-editar"
