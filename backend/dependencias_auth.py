@@ -76,3 +76,30 @@ def verificar_administrador(
         )
 
     return usuario_id
+
+def verificar_puede_editar(
+    usuario_id: int = Depends(obtener_usuario_id)
+):
+    with engine.connect() as connection:
+        resultado = connection.execute(
+            text("""
+                SELECT r.nombre
+                FROM usuarios u
+                JOIN roles r ON u.rol_id = r.id
+                WHERE u.id = :usuario_id
+            """),
+            {"usuario_id": usuario_id}
+        )
+
+        rol = resultado.scalar_one_or_none()
+
+    if rol is None or rol.strip().lower() not in (
+        "administrador",
+        "compliance"
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para modificar esta información"
+        )
+
+    return usuario_id

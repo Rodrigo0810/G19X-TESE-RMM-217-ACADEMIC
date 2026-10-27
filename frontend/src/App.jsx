@@ -90,6 +90,7 @@ const [filtroDepartamento, setFiltroDepartamento] = useState('')
 const [filtroNormativa, setFiltroNormativa] = useState('')
 const [token, setToken] = useState(null)
 const [esAdministrador, setEsAdministrador] = useState(false)
+const [puedeEditar, setPuedeEditar] = useState(false)
 const [correoLogin, setCorreoLogin] = useState('')
 const [contrasenaLogin, setContrasenaLogin] = useState('')
 const [errorLogin, setErrorLogin] = useState('')
@@ -539,6 +540,8 @@ if (!respuestaPerfil.ok) {
 }
 const perfil = await respuestaPerfil.json()
 setEsAdministrador(perfil.es_administrador === true)
+const rolActual = (perfil.rol || '').trim().toLowerCase()
+setPuedeEditar(['administrador', 'compliance'].includes(rolActual))
 setToken(datos.access_token)
 setContrasenaLogin('')
   } catch (error) {
@@ -549,6 +552,7 @@ setContrasenaLogin('')
 const cerrarSesion = () => {
   setToken(null)
   setEsAdministrador(false)
+  setPuedeEditar(false)
   setCorreoLogin('')
   setContrasenaLogin('')
   setErrorLogin('')
@@ -2215,13 +2219,15 @@ return (
 <div className="card">
   <h2>Gestión de obligaciones</h2>
   <p>Aquí se administrarán las obligaciones normativas.</p>
-  <button
+  {puedeEditar && (
+<button
     className="btn-nuevo"
     onClick={() => setMostrarFormularioNuevo(true)}
 >
     Nueva obligación
   </button>
-{mostrarFormularioNuevo && (
+)}
+{puedeEditar && mostrarFormularioNuevo && (
 <div className="formulario-edicion">
   <h3>Nueva obligación</h3>
 <div className="fila-nueva-obligacion">
@@ -2334,7 +2340,7 @@ return (
 </div>
 )}
 
-{obligacionEditando && (
+{puedeEditar && obligacionEditando && (
 <div className="formulario-edicion">
   <h3>Editar obligación</h3>
   <label>Nombre</label>
@@ -2452,18 +2458,22 @@ return (
     <td>{obligacion.estado}</td>
     <td>{obligacion.fecha_limite ? String(obligacion.fecha_limite).slice(0, 10) : 'Sin fecha asignada'}</td>
     <td>
-  <button
+  {puedeEditar && (
+<button
     className="btn-editar"
     onClick={() => setObligacionEditando(obligacion)}
 >
   Editar
   </button>
-  <button
+)}
+  {puedeEditar && (
+<button
     className="btn-eliminar"
     onClick={() => eliminarObligacion(obligacion.id)}
 >
   Eliminar
   </button>
+)}
   </td>
   </tr>
 ))}
@@ -2476,13 +2486,15 @@ return (
 <div className="card">
   <h2>Gestión de auditorías</h2>
   <p>Aquí se administrarán las auditorías de cumplimiento.</p>
-  <button
+  {puedeEditar && (
+<button
     className="btn-nuevo"
     onClick={() => setMostrarFormularioNuevaAuditoria(true)}
 >
    Nueva auditoría
   </button>
-{mostrarFormularioNuevaAuditoria && (
+)}
+{puedeEditar && mostrarFormularioNuevaAuditoria && (
 <div className="formulario-edicion">
   <h3>Nueva auditoría</h3>
 <div className="fila-nueva-obligacion">
@@ -2531,7 +2543,7 @@ return (
 </div>
 
 )}
-{auditoriaEditando && (
+{puedeEditar && auditoriaEditando && (
 <div className="formulario-edicion">
   <h3>Editar auditoría</h3>
   <label>Nombre</label>
@@ -2584,18 +2596,22 @@ return (
   <td>{auditoria.nombre}</td>
   <td>{auditoria.estado}</td>
   <td>
-  <button
+  {puedeEditar && (
+<button
    className="btn-editar"
    onClick={() => setAuditoriaEditando(auditoria)}
 >
   Editar
   </button>
-  <button
+)}
+  {puedeEditar && (
+<button
    className="btn-eliminar"
    onClick={() => eliminarAuditoria(auditoria.id)}
 >
   Eliminar
   </button>
+)}
   </td>
   </tr>
 ))}
@@ -2608,13 +2624,15 @@ return (
 <div className="card">
   <h2>Gestión de controles</h2>
   <p>Aquí se administrarán los controles internos de cumplimiento.</p>
-  <button
+  {puedeEditar && (
+<button
    className="btn-nuevo"
    onClick={() => setMostrarFormularioNuevoControl(true)}
 >
   Nuevo control
   </button>
-{mostrarFormularioNuevoControl && (
+)}
+{puedeEditar && mostrarFormularioNuevoControl && (
  <div className="formulario-edicion">
    <h3>Nuevo control</h3>
  <div className="fila-nueva-obligacion">
@@ -2663,7 +2681,7 @@ return (
 </div>
 )}
 
-{controlEditando && (
+{puedeEditar && controlEditando && (
   <div className="formulario-edicion">
   <h3>Editar control</h3>
   <label>Nombre</label>
@@ -2712,18 +2730,22 @@ return (
     <td>{control.nombre}</td>
     <td>{control.estado}</td>
     <td>
-  <button
+  {puedeEditar && (
+<button
    className="btn-editar"
    onClick={() => setControlEditando(control)}
 >
   Editar
   </button>
-  <button
+)}
+  {puedeEditar && (
+<button
    className="btn-eliminar"
    onClick={() => eliminarControl(control.id)}
 >
   Eliminar
   </button>
+)}
   </td>
   </tr>
 ))}
@@ -2736,13 +2758,15 @@ return (
 <div className="card">
   <h2>Gestión de riesgos</h2>
   <p>Aquí se administrarán los riesgos de cumplimiento.</p>
-  <button
+  {puedeEditar && (
+<button
    className="btn-nuevo"
    onClick={() => setMostrarFormularioNuevoRiesgo(true)}
 >
   Nuevo riesgo
   </button>
-{mostrarFormularioNuevoRiesgo && (
+)}
+{puedeEditar && mostrarFormularioNuevoRiesgo && (
 <div className="formulario-edicion">
   <h3>Nuevo riesgo</h3>
 <div className="fila-nueva-obligacion">
@@ -2803,7 +2827,7 @@ return (
 </div>
 )}
 
-{riesgoEditando && (
+{puedeEditar && riesgoEditando && (
 <div className="formulario-edicion">
   <h3>Editar riesgo</h3>
   <label>Nombre</label>
@@ -2867,18 +2891,22 @@ return (
    <td>{riesgo.nombre}</td>
    <td>{riesgo.estado}</td>
    <td>
-   <button
+   {puedeEditar && (
+<button
     className="btn-editar"
     onClick={() => setRiesgoEditando(riesgo)}
 >
   Editar
   </button>
-  <button
+)}
+  {puedeEditar && (
+<button
     className="btn-eliminar"
     onClick={() => eliminarRiesgo(riesgo.id)}
 >
   Eliminar
   </button>
+)}
   </td>
   </tr>
 ))}
@@ -2891,13 +2919,15 @@ return (
 <div className="card">
   <h2>Gestión de alertas</h2>
   <p>Aquí se administrarán las alertas de cumplimiento.</p>
-  <button
+  {puedeEditar && (
+<button
     className="btn-nuevo"
    onClick={() => setMostrarFormularioNuevaAlerta(true)}
 >
   Nueva alerta
   </button>
-{mostrarFormularioNuevaAlerta && (
+)}
+{puedeEditar && mostrarFormularioNuevaAlerta && (
 <div className="formulario-edicion">
   <h3>Nueva alerta</h3>
 <div className="fila-nueva-obligacion">
@@ -2955,7 +2985,7 @@ return (
 </div>
 )}
 
-{alertaEditando && (
+{puedeEditar && alertaEditando && (
 <div className="formulario-edicion">
   <h3>Editar alerta</h3>
   <label>Mensaje</label>
@@ -3004,18 +3034,22 @@ return (
     <td>{alerta.mensaje}</td>
     <td>{alerta.estado}</td>
     <td>
-  <button
+  {puedeEditar && (
+<button
   className="btn-editar"
   onClick={() => setAlertaEditando(alerta)}
 >
   Editar
   </button>
-  <button
+)}
+  {puedeEditar && (
+<button
   className="btn-eliminar"
   onClick={() => eliminarAlerta(alerta.id)}
 >
   Eliminar
   </button>
+)}
   </td>
   </tr>
 ))}
@@ -3026,13 +3060,15 @@ return (
 {vistaActual === 'normativas' && (
 <div className="card">
 <h2>Gestión de normativas</h2>
-  <button
+  {puedeEditar && (
+<button
    className="btn-nuevo"
    onClick={() => setMostrarFormularioNuevaNormativa(true)}
 >
   Nueva normativa
   </button>
-{mostrarFormularioNuevaNormativa && (
+)}
+{puedeEditar && mostrarFormularioNuevaNormativa && (
 <div className="formulario-edicion">
   <h3>Nueva normativa</h3>
 <div className="fila-nueva-obligacion">
@@ -3185,7 +3221,7 @@ const data = await responseLista.json()
 </div>
 )}
 
-{normativaEditando && (
+{puedeEditar && normativaEditando && (
 <div className="formulario-edicion">
   <h3>Editar normativa</h3>
 <div className="fila-nueva-obligacion">
@@ -3345,13 +3381,16 @@ const data = await responseLista.json()
     <td>{normativa.tipo}</td>
     <td>{normativa.activa ? 'Activa' : 'Inactiva'}</td>
     <td>
-    <button
+    {puedeEditar && (
+<button
       className="btn-editar"
       onClick={() => setNormativaEditando({ ...normativa })}
 >
   Editar
   </button>
-  <button
+)}
+  {puedeEditar && (
+<button
     className="btn-eliminar"
     onClick={async () => {
 const confirmar = window.confirm(
@@ -3394,6 +3433,7 @@ const data = await responseLista.json()
 >
   Eliminar
   </button>
+)}
     </td>
     </tr>
 ))}
@@ -3406,13 +3446,15 @@ const data = await responseLista.json()
 <div className="card">
   <h2>Gestión de departamentos</h2>
   <p>Aquí se administrarán los departamentos de la empresa.</p>
-  <button
+  {puedeEditar && (
+<button
     className="btn-nuevo"
     onClick={() => setMostrarFormularioNuevoDepartamento(true)}
 >
   Nuevo departamento
   </button>
-{mostrarFormularioNuevoDepartamento && (
+)}
+{puedeEditar && mostrarFormularioNuevoDepartamento && (
 <div className="formulario-edicion">
   <h3>Nuevo departamento</h3>
 <div className="fila-nueva-obligacion">
@@ -3480,7 +3522,7 @@ const data = await responseLista.json()
 </div>
 )}
 
-{departamentoEditando && (
+{puedeEditar && departamentoEditando && (
 <div className="formulario-edicion">
   <h3>Editar departamento</h3>
 <div className="fila-nueva-obligacion">
@@ -3543,18 +3585,22 @@ const data = await responseLista.json()
     <td>{departamento.id}</td>
     <td>{departamento.nombre}</td>
     <td>
-  <button
+  {puedeEditar && (
+<button
      className="btn-editar"
      onClick={() => setDepartamentoEditando(departamento)}
 >
   Editar
   </button>
-  <button
+)}
+  {puedeEditar && (
+<button
      className="btn-eliminar"
      onClick={() => eliminarDepartamento(departamento.id)}
 >
   Eliminar
   </button>
+)}
   </td>
   </tr>
 ))}
@@ -3566,13 +3612,15 @@ const data = await responseLista.json()
 <div className="card">
   <h2>Gestión de evidencias</h2>
   <p>Aquí se administrarán las evidencias de cumplimiento normativo.</p>
-  <button
+  {puedeEditar && (
+<button
     className="btn-nuevo"
     onClick={() => setMostrarFormularioNuevaEvidencia(true)}
 >
   Nueva evidencia
   </button>
-{mostrarFormularioNuevaEvidencia && (
+)}
+{puedeEditar && mostrarFormularioNuevaEvidencia && (
   <div className="formulario-edicion">
     <h3>Nueva evidencia</h3>
     <div className="fila-nueva-obligacion">
@@ -3723,7 +3771,7 @@ const data = await responseLista.json()
 </div>
 )}
 
-{evidenciaEditando && (
+{puedeEditar && evidenciaEditando && (
 <div className="formulario-edicion">
   <h3>Editar evidencia</h3>
 <div className="fila-nueva-obligacion">
@@ -3824,18 +3872,22 @@ const data = await responseLista.json()
      <td>{evidencia.tipo}</td>
      <td>{evidencia.estado}</td>
      <td>
-    <button
+    {puedeEditar && (
+<button
       className="btn-editar"
       onClick={() => setEvidenciaEditando(evidencia)}
 >
   Editar
   </button>
-  <button
+)}
+  {puedeEditar && (
+<button
     className="btn-eliminar"
     onClick={() => eliminarEvidencia(evidencia.id)}
 >
   Eliminar
   </button>
+)}
     </td>
     </tr>
 ))}
@@ -3848,13 +3900,15 @@ const data = await responseLista.json()
 <div className="card">
   <h2>Gestión de indicadores</h2>
   <p>Aquí se administrarán los indicadores de cumplimiento.</p>
-  <button
+  {puedeEditar && (
+<button
     className="btn-nuevo"
     onClick={() => setMostrarFormularioNuevoIndicador(true)}
 >
   Nuevo indicador
   </button>
-  {mostrarFormularioNuevoIndicador && (
+)}
+  {puedeEditar && mostrarFormularioNuevoIndicador && (
   <div className="formulario-edicion">
     <h3>Nuevo indicador</h3>
   <div className="fila-nueva-obligacion">
@@ -3959,7 +4013,7 @@ const data = await responseLista.json()
 </div>
 </div>
 )}
-{indicadorEditando && (
+{puedeEditar && indicadorEditando && (
 <div className="formulario-edicion">
     <h3>Editar indicador</h3>
 <div className="fila-nueva-obligacion">
@@ -4087,18 +4141,22 @@ const data = await responseLista.json()
       flexWrap: 'nowrap'
     }}
   >
-  <button
+  {puedeEditar && (
+<button
       className="btn-editar"
       onClick={() => setIndicadorEditando(indicador)}
 >
   Editar
   </button>
-  <button
+)}
+  {puedeEditar && (
+<button
     className="btn-eliminar"
     onClick={() => eliminarIndicador(indicador.id)}
 >
   Eliminar
   </button>
+)}
 </div>
   </td>
   </tr>

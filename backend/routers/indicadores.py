@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from dependencias_auth import verificar_puede_editar
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, ProgrammingError
 from database import engine
@@ -27,7 +28,7 @@ def listar_indicadores():
         indicadores = resultado.mappings().all()
     return [dict(indicador) for indicador in indicadores]
 
-@router.post("/indicadores", status_code=201)
+@router.post("/indicadores", status_code=201, dependencies=[Depends(verificar_puede_editar)])
 def crear_indicador(indicador: IndicadorCrear):
     datos = indicador.model_dump()
     if (
@@ -82,7 +83,7 @@ def crear_indicador(indicador: IndicadorCrear):
             detail="No se pudo crear el indicador. Verifica los datos enviados."
         )
 
-@router.put("/indicadores/{indicador_id}")
+@router.put("/indicadores/{indicador_id}", dependencies=[Depends(verificar_puede_editar)])
 def actualizar_indicador(
     indicador_id: int,
     indicador: IndicadorCrear
@@ -138,7 +139,7 @@ def actualizar_indicador(
             detail="No se pudo actualizar el indicador. Verifica los datos enviados."
         )
 
-@router.delete("/indicadores/{indicador_id}")
+@router.delete("/indicadores/{indicador_id}", dependencies=[Depends(verificar_puede_editar)])
 def eliminar_indicador(indicador_id: int):
     try:
         with engine.begin() as connection:

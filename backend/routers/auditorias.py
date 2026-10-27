@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from dependencias_auth import verificar_puede_editar
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from database import engine
@@ -30,7 +31,7 @@ def listar_auditorias():
         ]
     return auditorias
 
-@router.post("/auditorias", status_code=201)
+@router.post("/auditorias", status_code=201, dependencies=[Depends(verificar_puede_editar)])
 def crear_auditoria(auditoria: AuditoriaCrear):
     datos = auditoria.model_dump()
     if (
@@ -86,7 +87,7 @@ def crear_auditoria(auditoria: AuditoriaCrear):
         )
 
 
-@router.put("/auditorias/{auditoria_id}")
+@router.put("/auditorias/{auditoria_id}", dependencies=[Depends(verificar_puede_editar)])
 def actualizar_auditoria(
     auditoria_id: int,
     auditoria: AuditoriaCrear
@@ -142,7 +143,7 @@ def actualizar_auditoria(
             detail="El departamento indicado no existe."
         )
 
-@router.delete("/auditorias/{auditoria_id}")
+@router.delete("/auditorias/{auditoria_id}", dependencies=[Depends(verificar_puede_editar)])
 def eliminar_auditoria(auditoria_id: int):
     try:
         with engine.begin() as connection:

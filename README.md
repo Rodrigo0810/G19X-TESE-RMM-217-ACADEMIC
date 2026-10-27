@@ -1,4 +1,4 @@
-﻿# Dashboard Ejecutivo de Cumplimiento Normativo
+# Dashboard Ejecutivo de Cumplimiento Normativo
 
 ## Descripción del proyecto
 
@@ -218,3 +218,94 @@ con fecha limite entre hoy y los proximos siete dias.
 
 Los indicadores y alertas respetan los filtros del dashboard
 por departamento y normativa.
+
+## Matriz de permisos por rol - Corte 5
+
+### Objetivo
+
+Implementar el control de acceso basado en roles para proteger
+las operaciones de consulta, creacion, edicion y eliminacion
+del Dashboard Ejecutivo de Cumplimiento Normativo.
+
+### Modulos protegidos
+
+Los permisos se aplican a los siguientes nueve modulos:
+
+1. Obligaciones
+2. Auditorias
+3. Controles
+4. Evidencias
+5. Riesgos
+6. Alertas
+7. Normativas
+8. Departamentos
+9. Indicadores
+
+### Matriz de permisos
+
+| Rol | Consultar (GET) | Crear (POST) | Editar (PUT) | Eliminar (DELETE) | Usuarios y Roles |
+|---|---|---|---|---|---|
+| Administrador | Permitido | Permitido | Permitido | Permitido | Permitido |
+| Compliance | Permitido | Permitido | Permitido | Permitido | Denegado |
+| Auditor | Permitido | Denegado | Denegado | Denegado | Denegado |
+| Directivo | Permitido | Denegado | Denegado | Denegado | Denegado |
+
+### Implementacion de seguridad
+
+El backend utiliza FastAPI y autenticacion mediante JWT.
+
+La dependencia `verificar_puede_editar` permite las operaciones
+de modificacion exclusivamente a los roles Administrador y Compliance.
+
+Los roles Auditor y Directivo pueden consultar los nueve modulos,
+pero no tienen autorizacion para crear, editar o eliminar registros.
+
+Los endpoints de Usuarios y Roles estan reservados al Administrador.
+
+En el frontend desarrollado con React, los controles de creacion,
+edicion y eliminacion se muestran segun los permisos del usuario.
+La autorizacion definitiva se realiza en el backend.
+
+### Evidencia de pruebas
+
+Se ejecutaron las siguientes verificaciones:
+
+- Auditor: GET 200 y POST 403 en los nueve modulos.
+- Directivo: GET 200 y POST 403 en los nueve modulos.
+- Compliance: GET 200 y POST 422 con datos incompletos en los nueve modulos.
+- Administrador: GET 200 y POST 422 con datos incompletos en los nueve modulos.
+- Usuarios y Roles: GET 200 para Administrador y GET 403 para los otros tres roles.
+- Auditor y Directivo: PUT 403 y DELETE 403 en los nueve modulos.
+- Se verifico la existencia de las 18 rutas PUT y DELETE mediante OpenAPI.
+- Se reviso que las 18 operaciones PUT y DELETE tengan configurada la dependencia `verificar_puede_editar`.
+
+### Resultados
+
+Se completaron satisfactoriamente 152 verificaciones HTTP,
+ademas de 18 comprobaciones de rutas y 18 comprobaciones
+estaticas de proteccion de operaciones.
+
+Las 36 verificaciones adicionales corresponden a:
+
+- Compliance: nueve PUT con respuesta 422.
+- Compliance: nueve DELETE con respuesta 404.
+- Administrador: nueve PUT con respuesta 422.
+- Administrador: nueve DELETE con respuesta 404.
+
+Antes de cada DELETE se comprobo que el identificador
+999999999 no existiera en la tabla correspondiente.
+
+Las respuestas HTTP 422 confirman que la solicitud llego
+a la validacion de datos, mientras que las respuestas 404
+indican que el registro solicitado no fue encontrado.
+
+Estas verificaciones no constituyen pruebas de creacion,
+actualizacion o eliminacion exitosa de registros reales.
+
+### Consideraciones
+
+La ocultacion de botones en React mejora la experiencia del
+usuario, pero no sustituye la validacion de permisos en FastAPI.
+
+Los endpoints protegidos deben rechazar con HTTP 403 las
+operaciones de modificacion realizadas por usuarios sin permiso.

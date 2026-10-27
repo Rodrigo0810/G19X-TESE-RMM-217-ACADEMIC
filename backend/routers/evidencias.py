@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from dependencias_auth import verificar_puede_editar
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, ProgrammingError
 from database import engine
@@ -29,7 +30,7 @@ def listar_evidencias():
         evidencias = resultado.mappings().all()
     return [dict(evidencia) for evidencia in evidencias]
 
-@router.post("/evidencias", status_code=201)
+@router.post("/evidencias", status_code=201, dependencies=[Depends(verificar_puede_editar)])
 def crear_evidencia(evidencia: EvidenciaCrear):
     datos = evidencia.model_dump()
     if (
@@ -90,7 +91,7 @@ def crear_evidencia(evidencia: EvidenciaCrear):
             detail="La obligacion, auditoria o control indicado no existe."
         )
 
-@router.put("/evidencias/{evidencia_id}")
+@router.put("/evidencias/{evidencia_id}", dependencies=[Depends(verificar_puede_editar)])
 def actualizar_evidencia(
     evidencia_id: int,
     evidencia: EvidenciaCrear
@@ -151,7 +152,7 @@ def actualizar_evidencia(
             detail="La obligacion, auditoria o control indicado no existe."
         )
 
-@router.delete("/evidencias/{evidencia_id}")
+@router.delete("/evidencias/{evidencia_id}", dependencies=[Depends(verificar_puede_editar)])
 def eliminar_evidencia(evidencia_id: int):
     try:
         with engine.begin() as connection:

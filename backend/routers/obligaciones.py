@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from dependencias_auth import verificar_puede_editar
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from database import engine
@@ -29,7 +30,7 @@ def listar_obligaciones():
     return [dict(obligacion) for obligacion in obligaciones]
 
 
-@router.post("/obligaciones", status_code=201)
+@router.post("/obligaciones", status_code=201, dependencies=[Depends(verificar_puede_editar)])
 def crear_obligacion(obligacion: ObligacionCrear):
     datos = obligacion.model_dump()
     try:
@@ -97,7 +98,7 @@ def consultar_obligacion(obligacion_id: int):
         )
     return dict(obligacion)
 
-@router.put("/obligaciones/{obligacion_id}")
+@router.put("/obligaciones/{obligacion_id}", dependencies=[Depends(verificar_puede_editar)])
 def actualizar_obligacion(
     obligacion_id: int,
     obligacion: ObligacionCrear
@@ -146,7 +147,7 @@ def actualizar_obligacion(
             detail="El departamento o la normativa indicados no existen."
         )
 
-@router.delete("/obligaciones/{obligacion_id}")
+@router.delete("/obligaciones/{obligacion_id}", dependencies=[Depends(verificar_puede_editar)])
 def eliminar_obligacion(obligacion_id: int):
     try:
         with engine.begin() as connection:

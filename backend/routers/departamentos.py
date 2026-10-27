@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from dependencias_auth import verificar_puede_editar
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, ProgrammingError
 from database import engine
@@ -23,7 +24,7 @@ def listar_departamentos():
         departamentos = resultado.mappings().all()
     return [dict(departamento) for departamento in departamentos]
 
-@router.post("/departamentos", status_code=201)
+@router.post("/departamentos", status_code=201, dependencies=[Depends(verificar_puede_editar)])
 def crear_departamento(departamento: DepartamentoCrear):
     datos = departamento.model_dump()
     try:
@@ -57,7 +58,7 @@ def crear_departamento(departamento: DepartamentoCrear):
             detail="No se pudo crear el departamento. Verifica que el nombre no este repetido."
         )
 
-@router.put("/departamentos/{departamento_id}")
+@router.put("/departamentos/{departamento_id}", dependencies=[Depends(verificar_puede_editar)])
 def actualizar_departamento(
     departamento_id: int,
     departamento: DepartamentoCrear
@@ -96,7 +97,7 @@ def actualizar_departamento(
             detail="No se pudo actualizar el departamento. Verifica que el nombre no este repetido."
         )
 
-@router.delete("/departamentos/{departamento_id}")
+@router.delete("/departamentos/{departamento_id}", dependencies=[Depends(verificar_puede_editar)])
 def eliminar_departamento(departamento_id: int):
     try:
         with engine.begin() as connection:

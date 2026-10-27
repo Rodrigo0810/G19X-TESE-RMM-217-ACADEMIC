@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from dependencias_auth import verificar_puede_editar
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, ProgrammingError
 from database import engine
@@ -29,7 +30,7 @@ def listar_riesgos():
         riesgos = resultado.mappings().all()
     return [dict(riesgo) for riesgo in riesgos]
 
-@router.post("/riesgos", status_code=201)
+@router.post("/riesgos", status_code=201, dependencies=[Depends(verificar_puede_editar)])
 def crear_riesgo(riesgo: RiesgoCrear):
     datos = riesgo.model_dump()
     try:
@@ -82,7 +83,7 @@ def crear_riesgo(riesgo: RiesgoCrear):
             detail="La obligacion, auditoria o control indicado no existe o los datos no son validos."
         )
 
-@router.put("/riesgos/{riesgo_id}")
+@router.put("/riesgos/{riesgo_id}", dependencies=[Depends(verificar_puede_editar)])
 def actualizar_riesgo(
     riesgo_id: int,
     riesgo: RiesgoCrear
@@ -133,7 +134,7 @@ def actualizar_riesgo(
             detail="La obligacion, auditoria o control indicado no existe o los datos no son validos."
         )
 
-@router.delete("/riesgos/{riesgo_id}")
+@router.delete("/riesgos/{riesgo_id}", dependencies=[Depends(verificar_puede_editar)])
 def eliminar_riesgo(riesgo_id: int):
     try:
         with engine.begin() as connection:

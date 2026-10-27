@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from dependencias_auth import verificar_puede_editar
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, ProgrammingError
 from database import engine
@@ -27,7 +28,7 @@ def listar_controles():
         controles = resultado.mappings().all()
     return [dict(control) for control in controles]
 
-@router.post("/controles", status_code=201)
+@router.post("/controles", status_code=201, dependencies=[Depends(verificar_puede_editar)])
 def crear_control(control: ControlCrear):
     datos = control.model_dump()
     try:
@@ -73,7 +74,7 @@ def crear_control(control: ControlCrear):
             detail="La obligacion o el departamento indicado no existe."
         )
 
-@router.put("/controles/{control_id}")
+@router.put("/controles/{control_id}", dependencies=[Depends(verificar_puede_editar)])
 def actualizar_control(
     control_id: int,
     control: ControlCrear
@@ -120,7 +121,7 @@ def actualizar_control(
             detail="La obligacion o el departamento indicado no existe."
         )
 
-@router.delete("/controles/{control_id}")
+@router.delete("/controles/{control_id}", dependencies=[Depends(verificar_puede_editar)])
 def eliminar_control(control_id: int):
     try:
         with engine.begin() as connection:

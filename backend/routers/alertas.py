@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from dependencias_auth import verificar_puede_editar
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, ProgrammingError
 from database import engine
@@ -26,7 +27,7 @@ def listar_alertas():
         alertas = resultado.mappings().all()
     return [dict(alerta) for alerta in alertas]
 
-@router.post("/alertas", status_code=201)
+@router.post("/alertas", status_code=201, dependencies=[Depends(verificar_puede_editar)])
 def crear_alerta(alerta: AlertaCrear):
     datos = alerta.model_dump()
     try:
@@ -69,7 +70,7 @@ def crear_alerta(alerta: AlertaCrear):
             detail="La obligacion o el riesgo indicado no existe o los datos no son validos."
         )
 
-@router.put("/alertas/{alerta_id}")
+@router.put("/alertas/{alerta_id}", dependencies=[Depends(verificar_puede_editar)])
 def actualizar_alerta(
     alerta_id: int,
     alerta: AlertaCrear
@@ -114,7 +115,7 @@ def actualizar_alerta(
             detail="La obligacion o el riesgo indicado no existe o los datos no son validos."
         )
 
-@router.delete("/alertas/{alerta_id}")
+@router.delete("/alertas/{alerta_id}", dependencies=[Depends(verificar_puede_editar)])
 def eliminar_alerta(alerta_id: int):
     try:
         with engine.begin() as connection:

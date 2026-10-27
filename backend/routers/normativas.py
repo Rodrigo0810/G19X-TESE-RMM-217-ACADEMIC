@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from dependencias_auth import verificar_puede_editar
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, ProgrammingError
 from database import engine
@@ -27,7 +28,7 @@ def listar_normativas():
         normativas = resultado.mappings().all()
     return [dict(normativa) for normativa in normativas]
 
-@router.post("/normativas", status_code=201)
+@router.post("/normativas", status_code=201, dependencies=[Depends(verificar_puede_editar)])
 def crear_normativa(normativa: NormativaCrear):
     datos = normativa.model_dump()
     try:
@@ -73,7 +74,7 @@ def crear_normativa(normativa: NormativaCrear):
             detail="No se pudo crear la normativa. Verifica los datos enviados."
         )
 
-@router.put("/normativas/{normativa_id}")
+@router.put("/normativas/{normativa_id}", dependencies=[Depends(verificar_puede_editar)])
 def actualizar_normativa(
     normativa_id: int,
     normativa: NormativaCrear
@@ -120,7 +121,7 @@ def actualizar_normativa(
             detail="No se pudo actualizar la normativa. Verifica los datos enviados."
         )
 
-@router.delete("/normativas/{normativa_id}")
+@router.delete("/normativas/{normativa_id}", dependencies=[Depends(verificar_puede_editar)])
 def eliminar_normativa(normativa_id: int):
     try:
         with engine.begin() as connection:
