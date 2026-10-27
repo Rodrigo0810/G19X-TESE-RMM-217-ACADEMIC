@@ -194,3 +194,27 @@ Si no se configura esta variable, el frontend utilizará automáticamente `http:
 Después de modificar el archivo `.env`, es necesario reiniciar el servidor de desarrollo de Vite para aplicar los cambios.
 
 Por seguridad, no deben almacenarse contraseñas, tokens privados ni claves secretas en variables que comiencen con `VITE_`, ya que pueden quedar expuestas en el navegador.
+
+## Criterio unificado de obligaciones vencidas
+
+El Dashboard Ejecutivo de Cumplimiento Normativo utiliza una sola
+regla para identificar las obligaciones vencidas mediante la funcion
+`estaVencida(obligacion)`.
+
+Una obligacion se considera vencida cuando:
+
+- Su estado es `Vencida`, independientemente de su fecha limite.
+- Su fecha limite es anterior a la fecha actual y su estado no es `Cumplida`.
+
+Esta regla se aplica a la tarjeta de obligaciones vencidas,
+la grafica de distribucion de obligaciones, el indicador de
+incidencias criticas y la alerta ejecutiva de vencimientos.
+
+Las obligaciones vencidas no se contabilizan nuevamente en las
+categorias `Pendiente` o `En progreso`.
+
+La alerta de proximas a vencer considera obligaciones no vencidas
+con fecha limite entre hoy y los proximos siete dias.
+
+Los indicadores y alertas respetan los filtros del dashboard
+por departamento y normativa.

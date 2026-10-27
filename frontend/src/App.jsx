@@ -180,16 +180,14 @@ const fecha = new Date(anio, mes - 1, dia)
   }
   return fecha
 }
-const obligacionesVencidasPorFecha = obligacionesFiltradas.filter(
-  (obligacion) => {
-const fecha = obtenerFechaLimite(obligacion)
-    return (
-      fecha !== null &&
-      fecha < hoy &&
-      obligacion.estado !== 'Cumplida'
-    )
-  }
-)
+const estaVencida = (obligacion) => {
+  if (obligacion.estado === 'Vencida') return true
+  if (obligacion.estado === 'Cumplida') return false
+
+  const fecha = obtenerFechaLimite(obligacion)
+  return fecha !== null && fecha < hoy
+}
+const obligacionesVencidasLista = obligacionesFiltradas.filter(estaVencida)
 const obligacionesProximasAVencer = obligacionesFiltradas.filter(
   (obligacion) => {
 const fecha = obtenerFechaLimite(obligacion)
@@ -197,22 +195,20 @@ const fecha = obtenerFechaLimite(obligacion)
       fecha !== null &&
       fecha >= hoy &&
       fecha <= limiteProximos7Dias &&
-      obligacion.estado !== 'Cumplida'
+      !estaVencida(obligacion)
     )
   }
 )
 const obligacionesPendientes = obligacionesFiltradas.filter(
-  (obligacion) => obligacion.estado === 'Pendiente'
+  (obligacion) => obligacion.estado === 'Pendiente' && !estaVencida(obligacion)
 ).length
 const obligacionesEnProgreso = obligacionesFiltradas.filter(
-  (obligacion) => obligacion.estado === 'En progreso'
+  (obligacion) => obligacion.estado === 'En progreso' && !estaVencida(obligacion)
 ).length
 const obligacionesCumplidas = obligacionesFiltradas.filter(
-  (obligacion) => obligacion.estado === 'Cumplida'
+  (obligacion) => obligacion.estado === 'Cumplida' && !estaVencida(obligacion)
 ).length
-const obligacionesVencidas = obligacionesFiltradas.filter(
-  (obligacion) => obligacion.estado === 'Vencida'
-).length
+const obligacionesVencidas = obligacionesVencidasLista.length
 // Filtrado conservador: cada relación explícita debe ser compatible con el filtro.
 // Un registro sin relaciones verificables no se atribuye a una selección.
 const hayFiltrosDashboard = filtroDepartamento !== '' || filtroNormativa !== ''
@@ -2168,17 +2164,17 @@ return (
   </p>
 </div>
 )}
-{obligacionesVencidasPorFecha.length > 0 && (
+{obligacionesVencidasLista.length > 0 && (
 <div className="alerta-ejecutiva">
-  <strong>⚠ Obligaciones vencidas por fecha</strong>
+  <strong>⚠ Obligaciones vencidas</strong>
   <p>
-    Se detectaron {obligacionesVencidasPorFecha.length} obligación(es)
-    cuya fecha límite ya pasó y que requieren atención.
+    Se detectaron {obligacionesVencidasLista.length} obligación(es)
+    clasificadas como vencidas por estado o por fecha límite.
   </p>
   <ul>
-{obligacionesVencidasPorFecha.map((obligacion) => (
+{obligacionesVencidasLista.map((obligacion) => (
   <li key={obligacion.id}>
-{obligacion.nombre} — Fecha límite: {String(obligacion.fecha_limite).slice(0, 10)}
+{obligacion.nombre} — Fecha límite: {obligacion.fecha_limite ? String(obligacion.fecha_limite).slice(0, 10) : 'Sin fecha asignada'}
   </li>
 ))}
   </ul>
@@ -2194,7 +2190,7 @@ return (
   <ul>
 {obligacionesProximasAVencer.map((obligacion) => (
   <li key={obligacion.id}>
-{obligacion.nombre} — Fecha límite: {String(obligacion.fecha_limite).slice(0, 10)}
+{obligacion.nombre} — Fecha límite: {obligacion.fecha_limite ? String(obligacion.fecha_limite).slice(0, 10) : 'Sin fecha asignada'}
   </li>
 ))}
   </ul>
