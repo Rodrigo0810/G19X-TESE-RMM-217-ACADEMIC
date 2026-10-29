@@ -380,10 +380,10 @@ const respuesta = await fetch(
 setAuditorias((anteriores) =>
   anteriores.filter((auditoria) => auditoria.id !== id)
 )
-alert('Auditoría eliminada correctamente')
+mostrarNotificacion('Auditoría eliminada correctamente', 'exito')
   } catch (error) {
     console.error(error)
-    alert('Ocurrió un error al eliminar la auditoría')
+    mostrarNotificacion('Ocurrió un error al eliminar la auditoría', 'error')
   }
 }
 const crearObligacion = async () => {
@@ -496,15 +496,15 @@ const auditoriaActualizada = await respuesta.json()
   )
 )
   setAuditoriaEditando(null)
-    alert('Auditoría actualizada correctamente')
+    mostrarNotificacion('Auditoría actualizada correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar auditoría:', error)
-    alert('Ocurrió un error al actualizar la auditoría')
+    mostrarNotificacion('Ocurrió un error al actualizar la auditoría', 'error')
   }
 }
 const crearAuditoria = async () => {
   if (!nuevaAuditoria.nombre.trim()) {
-    alert('Escribe el nombre de la auditoría')
+    mostrarNotificacion('Escribe el nombre de la auditoría', 'info')
     return
   }
   try {
@@ -533,10 +533,10 @@ const auditoriaCreada = await respuesta.json()
       estado: 'Programada'
 })
   setMostrarFormularioNuevaAuditoria(false)
-    alert('Auditoría creada correctamente')
+    mostrarNotificacion('Auditoría creada correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear auditoría:', error)
-    alert('Ocurrió un error al crear la auditoría')
+    mostrarNotificacion('Ocurrió un error al crear la auditoría', 'error')
   }
 }
 const guardarEdicionControl = async () => {
