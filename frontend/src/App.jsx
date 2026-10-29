@@ -109,7 +109,8 @@ const [nuevoRiesgo, setNuevoRiesgo] = useState({
 const [mostrarFormularioNuevoControl, setMostrarFormularioNuevoControl] = useState(false)
 const [nuevoControl, setNuevoControl] = useState({
   nombre: '',
-  estado: 'Pendiente'
+  estado: 'Pendiente',
+  obligacion_id: null
 })
 const [mostrarFormularioNuevaAuditoria, setMostrarFormularioNuevaAuditoria] = useState(false)
 const [nuevaAuditoria, setNuevaAuditoria] = useState({
@@ -617,7 +618,8 @@ setControles((anteriores) => [
 ])
 setNuevoControl({
       nombre: '',
-      estado: 'Pendiente'
+      estado: 'Pendiente',
+      obligacion_id: null
 })
   setMostrarFormularioNuevoControl(false)
     alert('Control creado correctamente')
@@ -1815,6 +1817,25 @@ return (
   <option value="En progreso">En progreso</option>
   <option value="Implementado">Implementado</option>
   <option value="Fallido">Fallido</option>
+  </select>
+  <label>Obligación relacionada</label>
+  <select
+    value={nuevoControl.obligacion_id ?? ''}
+    onChange={(e) =>
+      setNuevoControl({
+        ...nuevoControl,
+        obligacion_id: e.target.value === ''
+          ? null
+          : Number(e.target.value)
+      })
+    }
+  >
+    <option value="">Sin obligación</option>
+    {obligaciones.map((obligacion) => (
+      <option key={obligacion.id} value={obligacion.id}>
+        {obligacion.nombre}
+      </option>
+    ))}
   </select>
 <div className="botones-formulario">
   <button
