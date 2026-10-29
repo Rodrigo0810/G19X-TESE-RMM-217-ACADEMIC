@@ -179,6 +179,172 @@ El programa solicitará el nombre, correo electrónico y contraseña del adminis
 
 Por seguridad, el script comprueba si ya existe un usuario con el rol Administrador. Si encuentra uno, no creará otro mediante este procedimiento.
 
+## Uso
+
+Esta sección explica cómo ingresar por primera vez al Dashboard Ejecutivo de Cumplimiento Normativo, recorrer el tablero y comprobar sus funcionalidades. Antes de comenzar, se deben completar la instalación, la configuración de PostgreSQL y la preparación del backend y frontend descritas anteriormente.
+
+### 1. Crear el primer administrador
+
+Desde la carpeta principal del proyecto, después de configurar la base de datos y las dependencias, ejecutar:
+
+```powershell
+python backend/crear_admin.py
+```
+
+El programa solicitará nombre, correo electrónico y contraseña. La contraseña se introduce de manera oculta y se almacena mediante un hash seguro.
+
+Este procedimiento está destinado al primer administrador. Si ya existe uno, el script no creará otro mediante este mecanismo. No se deben publicar las credenciales.
+
+### 2. Iniciar sesión en la aplicación
+
+En una terminal PowerShell, desde la raíz del repositorio, iniciar el backend:
+
+```powershell
+cd backend
+.\venv\Scripts\Activate.ps1
+python -m uvicorn main:app --reload
+```
+
+En otra terminal, desde la raíz del repositorio, iniciar el frontend:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Abrir en el navegador la dirección que muestre Vite, normalmente:
+
+http://localhost:5173
+
+Ingresar el correo electrónico y la contraseña del administrador creado previamente. Después de autenticarse, acceder al Dashboard Ejecutivo.
+
+El backend debe permanecer ejecutándose y conectado a PostgreSQL. La documentación de la API puede consultarse normalmente en http://127.0.0.1:8000/docs.
+
+### 3. Recorrido inicial del tablero
+
+Al ingresar, revisar las tarjetas de indicadores y las gráficas de obligaciones, auditorías, controles, riesgos y alertas.
+
+El tablero presenta información consolidada a partir de los registros disponibles en PostgreSQL. Entre sus indicadores se encuentra el porcentaje de cumplimiento y el seguimiento de obligaciones por estado.
+
+Los valores dependen de los datos registrados y de los filtros seleccionados; por ello, pueden variar entre instalaciones.
+
+### 4. Probar los filtros por departamento y normativa
+
+En el apartado **Filtros del Dashboard Ejecutivo**:
+
+1. Seleccionar un departamento en el filtro **Departamento**.
+2. Revisar cómo se actualizan los indicadores, las gráficas y las obligaciones mostradas.
+3. Seleccionar una opción en el filtro **Normativa**.
+4. Comprobar los resultados correspondientes a los filtros activos.
+5. Presionar **Limpiar filtros** para regresar a la consulta general.
+
+Los filtros permiten consultar información específica sin modificar los registros almacenados.
+
+### 5. Consultar el cumplimiento por departamento
+
+Localizar la visualización **Cumplimiento por departamento** en el tablero.
+
+Revisar los valores de cada departamento y seleccionar uno en el filtro correspondiente para consultar sus resultados. Comparar los indicadores con las obligaciones registradas para esa área.
+
+El porcentaje mostrado es un indicador calculado por la aplicación y no constituye una certificación automática de cumplimiento regulatorio.
+
+### 6. Comprobar las alertas de obligaciones
+
+El dashboard identifica obligaciones vencidas y próximas a vencer a partir de sus fechas límite y estados.
+
+Para comprobar estas funciones con una cuenta autorizada:
+
+1. Entrar al módulo **Obligaciones**.
+2. Crear una obligación de prueba con estado **Pendiente** y una fecha límite anterior a la fecha actual.
+3. Regresar al dashboard y revisar la alerta de obligaciones vencidas.
+4. Crear otra obligación de prueba con fecha límite futura dentro de los próximos siete días.
+5. Verificar que aparezca en la alerta de obligaciones próximas a vencer.
+6. Revisar las fechas límite en la lista **Obligaciones registradas**.
+7. Eliminar los registros de prueba cuando corresponda y no existan relaciones que impidan eliminarlos.
+
+El cálculo de vencimientos sigue el criterio unificado documentado en este README. Las obligaciones vencidas no deben contabilizarse nuevamente como próximas a vencer.
+
+### 7. Verificar los permisos por rol
+
+El sistema utiliza autenticación JWT y autorización basada en roles. Los permisos de los nueve módulos protegidos se resumen a continuación:
+
+| Rol | Consultar | Crear, editar y eliminar | Usuarios y Roles |
+|---|---|---|---|
+| Administrador | Permitido | Permitido | Permitido |
+| Compliance | Permitido | Permitido | Denegado |
+| Auditor | Permitido | Denegado | Denegado |
+| Directivo | Permitido | Denegado | Denegado |
+
+Para comprobar las diferencias:
+
+1. Iniciar sesión con una cuenta **Administrador** y verificar los controles de gestión disponibles.
+2. Cerrar sesión e ingresar con una cuenta de prueba de rol **Directivo**.
+3. Abrir el dashboard y consultar sus indicadores, filtros y alertas.
+4. Comprobar que el usuario Directivo no tenga botones para crear, editar o eliminar registros.
+5. Confirmar que la administración de usuarios y roles esté reservada al Administrador.
+
+Los roles Auditor y Directivo tienen permisos de consulta, mientras que Administrador y Compliance pueden modificar registros en los nueve módulos protegidos. La autorización definitiva se aplica en FastAPI, no solamente mediante la visibilidad de botones en React.
+
+### 8. Resultado esperado
+
+Al finalizar el recorrido, el usuario debe poder iniciar sesión, consultar los indicadores, aplicar y limpiar filtros, revisar el cumplimiento por departamento, identificar obligaciones vencidas o próximas a vencer y distinguir los permisos correspondientes a cada rol.
+
+Se recomienda realizar las pruebas de modificación sobre registros de prueba, sin alterar información real de cumplimiento normativo.
+
+## Uso de IA
+
+### 1. Herramienta utilizada
+
+Durante el desarrollo del Dashboard Ejecutivo de Cumplimiento Normativo se utilizó **ChatGPT, asistente de inteligencia artificial de OpenAI**, como apoyo para analizar requisitos, proponer modificaciones de código, revisar errores, organizar pruebas y mejorar la documentación.
+
+La inteligencia artificial se utilizó como herramienta de asistencia. Las propuestas generadas no se aceptaron automáticamente: se revisaron y contrastaron con el proyecto y los requisitos de TODO Academy.
+
+### 2. Aplicación de la IA en el desarrollo
+
+| Área | Para qué se utilizó la IA | Cómo se revisó el resultado |
+|---|---|---|
+| Frontend React | Proponer ajustes de JSX, componentes y estructura del dashboard | Revisión del código, compilación y pruebas en navegador |
+| Refactorización | Apoyar la extracción de `Dashboard.jsx` y `Obligaciones.jsx` | Verificación de filtros, gráficas, formularios y permisos |
+| Métricas | Apoyar la centralización de cálculos en `utils/metricas.js` | Revisión de indicadores y alertas |
+| Depuración | Analizar advertencias y proponer correcciones | Ejecución de ESLint y compilación |
+| Seguridad | Apoyar la interpretación de permisos y la preparación de pruebas | Comprobación de restricciones según los roles |
+| Documentación | Estructurar instrucciones de uso y explicaciones técnicas | Comparación con comandos, funcionalidades y README existentes |
+
+### 3. Decisiones tomadas por el desarrollador
+
+Las decisiones sobre el alcance del proyecto, la prioridad de las correcciones, la aceptación de propuestas y la incorporación de cambios al repositorio fueron responsabilidad del desarrollador.
+
+Se decidió dar prioridad a los criterios pendientes de TODO Academy antes de agregar nuevas funcionalidades.
+
+También se optó por separar las vistas del dashboard y de obligaciones en componentes independientes, conservar la lógica existente y registrar cada refactorización mediante commits separados.
+
+Las sugerencias de IA se adaptaron a la estructura real del repositorio y se verificaron antes de considerarlas terminadas.
+
+### 4. Revisión y pruebas realizadas
+
+Para comprobar los cambios propuestos con asistencia de IA se utilizaron las siguientes herramientas:
+
+- `git status`: identificar archivos modificados.
+- `git diff --check`: revisar problemas de formato.
+- `git log`: comprobar el historial de commits.
+- `npm run lint`: verificar el análisis estático del frontend.
+- `npm run build`: comprobar que la aplicación compile.
+- Navegador web: probar filtros, indicadores, alertas, formularios y permisos.
+- Git y GitHub: registrar y publicar las modificaciones verificadas.
+
+Durante la separación de componentes se comprobó que el dashboard conservara sus gráficas, filtros y alertas. También se verificaron las operaciones de creación, edición y eliminación de obligaciones y las restricciones visibles según el rol.
+
+Las comprobaciones de compilación y análisis estático no sustituyen las pruebas funcionales ni garantizan por sí solas la ausencia de vulnerabilidades.
+
+### 5. Transparencia y responsabilidad
+
+El proyecto se desarrolló con apoyo de inteligencia artificial en tareas específicas de programación, revisión, depuración y documentación.
+
+El desarrollador decidió qué cambios incorporar, revisó los resultados, ejecutó las pruebas disponibles y verificó el comportamiento de las funciones modificadas.
+
+La responsabilidad final sobre el código, la protección de credenciales, las pruebas, la documentación y la entrega académica corresponde al desarrollador.
+
 ## Configuración de la URL del backend
 
 El frontend utiliza la variable de entorno `VITE_API_URL` para configurar la dirección de la API desarrollada con FastAPI.
