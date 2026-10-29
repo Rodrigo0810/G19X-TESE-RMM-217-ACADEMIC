@@ -353,10 +353,10 @@ const respuesta = await fetch(
   setObligaciones((anteriores) =>
     anteriores.filter((obligacion) => obligacion.id !== id)
 )
-    alert('Obligación eliminada correctamente')
+    mostrarNotificacion('Obligación eliminada correctamente', 'exito')
   } catch (error) {
     console.error(error)
-    alert('Ocurrió un error al eliminar la obligación')
+    mostrarNotificacion('Ocurrió un error al eliminar la obligación', 'error')
 }
 }
 const eliminarAuditoria = async (id) => {
@@ -388,7 +388,7 @@ alert('Auditoría eliminada correctamente')
 }
 const crearObligacion = async () => {
   if (!nuevaObligacion.nombre.trim()) {
-    alert('Por favor, escribe el nombre de la obligación')
+    mostrarNotificacion('Por favor, escribe el nombre de la obligación', 'info')
     return
   }
   try {
@@ -424,10 +424,10 @@ const obligacionCreada = await respuesta.json()
   responsable: ''
 })
     setMostrarFormularioNuevo(false)
-    alert('Obligación registrada correctamente')
+    mostrarNotificacion('Obligación registrada correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear obligación:', error)
-    alert('No se pudo registrar la obligación. Revisa la consola.')
+    mostrarNotificacion('No se pudo registrar la obligación. Revisa la consola.', 'error')
   }
 }
 const guardarEdicionObligacion = async () => {
@@ -461,10 +461,10 @@ const obligacionActualizada = await respuesta.json()
   )
 )
   setObligacionEditando(null)
-    alert('Obligación actualizada correctamente')
+    mostrarNotificacion('Obligación actualizada correctamente', 'exito')
   } catch (error) {
   console.error(error)
-    alert('Ocurrió un error al actualizar la obligación')
+    mostrarNotificacion('Ocurrió un error al actualizar la obligación', 'error')
  }
 }
 const guardarEdicionAuditoria = async () => {
