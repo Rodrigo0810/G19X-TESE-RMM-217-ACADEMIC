@@ -101,10 +101,44 @@
   }
 }
 .obligaciones-lista li {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(120px, 1fr) minmax(150px, 1fr);
   align-items: center;
-  gap: 15px;
+  gap: 16px;
+}
+
+.obligaciones-lista li > strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.obligaciones-lista li > .estado-badge {
+  justify-self: center;
+  text-align: center;
+}
+
+.obligaciones-lista li > small {
+  justify-self: end;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+  .obligaciones-lista li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+  }
+
+  .obligaciones-lista li > .estado-badge {
+    justify-self: end;
+  }
+
+  .obligaciones-lista li > small {
+    grid-column: 1 / -1;
+    justify-self: start;
+    text-align: left;
+  }
 }
 .estado-badge {
   padding: 6px 12px;
