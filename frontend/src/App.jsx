@@ -2029,6 +2029,11 @@ return (
   <span className={`estado-badge estado-${obligacion.estado.toLowerCase().replace(' ', '-')}`}>
 {obligacion.estado}
   </span>
+  <small>
+    {obligacion.fecha_limite
+      ? `Vence: ${String(obligacion.fecha_limite).slice(0, 10)}`
+      : 'Sin fecha asignada'}
+  </small>
   </li>
 ))}
   </ul>
