@@ -2,10 +2,20 @@ import { useEffect, useState } from 'react'
 import Dashboard from './components/Dashboard.jsx'
 import Obligaciones from './components/Obligaciones.jsx'
 import Normativas from './components/Normativas.jsx'
+import Notificacion from './components/Notificacion.jsx'
 import './App.css'
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
 function App() {
+const [notificacion, setNotificacion] = useState(null)
+
+const mostrarNotificacion = (mensaje, tipo = 'info') => {
+  setNotificacion({ mensaje, tipo })
+}
+
+const cerrarNotificacion = () => {
+  setNotificacion(null)
+}
 const [obligaciones, setObligaciones] = useState([])
 const [auditorias, setAuditorias] = useState([])
 const [controles, setControles] = useState([])
@@ -1520,6 +1530,11 @@ return (
 return (
 
 <div className="dashboard">
+<Notificacion
+  mensaje={notificacion?.mensaje}
+  tipo={notificacion?.tipo}
+  onCerrar={cerrarNotificacion}
+/>
 <header className="dashboard-header">
   <h1>Dashboard Ejecutivo de Cumplimiento Normativo</h1>
   <p>PluriOne S.A. de C.V.</p>
@@ -2288,6 +2303,7 @@ return (
     setNuevaNormativa={setNuevaNormativa}
     puedeEditar={puedeEditar}
     encabezadosAuth={encabezadosAuth}
+    mostrarNotificacion={mostrarNotificacion}
   />
 )}
 {vistaActual === 'departamentos' && (

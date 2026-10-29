@@ -10,7 +10,8 @@ function Normativas({
   nuevaNormativa,
   setNuevaNormativa,
   puedeEditar,
-  encabezadosAuth
+  encabezadosAuth,
+  mostrarNotificacion
 }) {
   return (
 <div className="card">
@@ -111,7 +112,7 @@ function Normativas({
     style={{ marginTop: '4px' }}
     onClick={async () => {
   if (!nuevaNormativa.nombre.trim() || !nuevaNormativa.tipo.trim()) {
-      alert('Debes ingresar el nombre y el tipo de normativa')
+      mostrarNotificacion('Debes ingresar el nombre y el tipo de normativa', 'info')
       return
 }
   try {
@@ -144,10 +145,10 @@ const data = await responseLista.json()
         activa: true
 })
       setMostrarFormularioNuevaNormativa(false)
-      alert('Normativa guardada correctamente')
+      mostrarNotificacion('Normativa guardada correctamente', 'exito')
     } catch (error) {
       console.error('Error al guardar normativa:', error)
-      alert(error.message)
+      mostrarNotificacion(error.message, 'error')
      }
   }}
 >
@@ -267,7 +268,7 @@ const data = await responseLista.json()
       !normativaEditando.nombre.trim() ||
       !normativaEditando.tipo.trim()
 ) {
-      alert('El nombre y el tipo son obligatorios')
+      mostrarNotificacion('El nombre y el tipo son obligatorios', 'info')
       return
 }
   try {
@@ -305,10 +306,10 @@ const responseLista = await fetch(
 const data = await responseLista.json()
       setNormativas(data)
       setNormativaEditando(null)
-      alert('Normativa actualizada correctamente')
+      mostrarNotificacion('Normativa actualizada correctamente', 'exito')
     } catch (error) {
       console.error('Error al actualizar normativa:', error)
-      alert(error.message)
+      mostrarNotificacion(error.message, 'error')
     }
   }}
 >
@@ -379,10 +380,10 @@ const data = await responseLista.json()
   if (normativaEditando?.id === normativa.id) {
     setNormativaEditando(null)
 }
-  alert('Normativa eliminada correctamente')
+  mostrarNotificacion('Normativa eliminada correctamente', 'exito')
 } catch (error) {
       console.error('Error al eliminar normativa:', error)
-      alert(error.message)
+      mostrarNotificacion(error.message, 'error')
     }
   }}
 >
