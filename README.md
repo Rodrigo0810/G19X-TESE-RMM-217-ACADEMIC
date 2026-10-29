@@ -160,6 +160,103 @@ El proyecto utiliza PostgreSQL para almacenar la información del Dashboard Ejec
 6. Si se necesitan registros de ejemplo, revisar y ejecutar `database/data.sql` en una instalación de prueba.
 7. Configurar las variables de conexión en `backend/.env`.
 
+
+### Ejecucion reproducible de pruebas de permisos
+
+El repositorio incluye `backend/probar_permisos.py`, un script
+que verifica los permisos por rol mediante solicitudes HTTP reales.
+
+#### Requisitos
+
+- Backend FastAPI iniciado en `http://127.0.0.1:8000`.
+- Base de datos PostgreSQL configurada.
+- Python instalado.
+- Una cuenta activa con rol Auditor o Directivo.
+- Una cuenta activa con rol Compliance o Administrador.
+
+Para preparar las cuentas de prueba, un administrador debe
+asignar los roles correspondientes a dos usuarios de prueba.
+Las cuentas deben tener contrasenas propias y mantenerse activas.
+No se deben incluir credenciales reales en el repositorio.
+
+#### Configurar credenciales en PowerShell
+
+Ejecutar los siguientes comandos en la misma terminal:
+
+```powershell
+$env:PLURIONE_API_URL = "http://127.0.0.1:8000"
+
+$env:PLURIONE_LECTOR_CORREO = Read-Host "Correo del lector"
+$clave = Read-Host "Contrasena del lector" -AsSecureString
+$env:PLURIONE_LECTOR_CONTRASENA = (
+    [System.Net.NetworkCredential]::new("", $clave)
+).Password
+
+$env:PLURIONE_EDITOR_CORREO = Read-Host "Correo del editor"
+$clave = Read-Host "Contrasena del editor" -AsSecureString
+$env:PLURIONE_EDITOR_CONTRASENA = (
+    [System.Net.NetworkCredential]::new("", $clave)
+).Password
+
+Remove-Variable clave
+```
+
+Las credenciales se leen durante la ejecucion y no se
+almacenan en el codigo fuente ni se imprimen en pantalla.
+Las variables permanecen en la sesion actual de PowerShell.
+
+#### Ejecutar la prueba
+
+Desde la raiz del repositorio:
+
+```powershell
+python .\backend\probar_permisos.py
+```
+
+El script utiliza exclusivamente la biblioteca estandar de
+Python; no requiere instalar `requests`.
+
+#### Resultados esperados
+
+El script realiza 39 comprobaciones HTTP:
+
+- 1 GET sin autenticacion: HTTP 401.
+- 9 GET como lector: HTTP 200.
+- 9 POST como lector: HTTP 403.
+- 9 GET como editor: HTTP 200.
+- 9 POST como editor con cuerpo vacio: HTTP 422.
+- 2 GET de administracion como lector: HTTP 403.
+
+Resultado esperado:
+
+```text
+=== RESUMEN FINAL ===
+Pruebas totales: 39
+Pruebas aprobadas: 39
+Pruebas fallidas: 0
+RESULTADO: TODAS LAS PRUEBAS APROBADAS
+```
+
+#### Evidencia de ejecucion
+
+En la ejecucion local del 29 de octubre de 2026 se
+obtuvieron 39 verificaciones aprobadas y cero fallidas
+utilizando los roles Auditor y Compliance.
+
+Estas pruebas comprueban la autorizacion HTTP de GET y
+POST. Las solicitudes POST del editor utilizan un cuerpo
+vacio para provocar la validacion HTTP 422 sin crear datos.
+
+El script no ejecuta operaciones PUT ni DELETE y no
+demuestra escrituras exitosas. Las 152 verificaciones
+historicas documentadas en la matriz corresponden a un
+alcance de pruebas mas amplio.
+
+El script finaliza con codigo de salida 0 si todas las
+comprobaciones son correctas, o 1 si hay errores.
+
+Al terminar, cerrar la terminal o eliminar las variables
+de entorno que contienen las credenciales de prueba.
 ### Consideraciones importantes
 
 - Ejecutar primero `schema.sql` y después `data.sql`, si se requieren datos de ejemplo.
