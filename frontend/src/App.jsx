@@ -97,7 +97,8 @@ const [mostrarFormularioNuevaAlerta, setMostrarFormularioNuevaAlerta] = useState
 const [nuevaAlerta, setNuevaAlerta] = useState({
   titulo: '',
   mensaje: '',
-  estado: 'Pendiente'
+  estado: 'Pendiente',
+  obligacion_id: null
 })
 const [mostrarFormularioNuevoRiesgo, setMostrarFormularioNuevoRiesgo] = useState(false)
 const [nuevoRiesgo, setNuevoRiesgo] = useState({
@@ -829,8 +830,10 @@ const alertaCreada = await respuesta.json()
 ])
     setNuevaAlerta({
       titulo: '',
-      estado: 'Pendiente'
-})
+      mensaje: '',
+      estado: 'Pendiente',
+      obligacion_id: null
+    })
     setMostrarFormularioNuevaAlerta(false)
     alert('Alerta creada correctamente')
   } catch (error) {
@@ -2165,6 +2168,25 @@ return (
   <option value="Atendida">Atendida</option>
   <option value="Descartada">Descartada</option>
   </select>
+  <label>Obligación relacionada</label>
+  <select
+    value={nuevaAlerta.obligacion_id ?? ''}
+    onChange={(e) =>
+      setNuevaAlerta({
+        ...nuevaAlerta,
+        obligacion_id: e.target.value === ''
+          ? null
+          : Number(e.target.value)
+      })
+    }
+  >
+    <option value="">Sin obligación</option>
+    {obligaciones.map((obligacion) => (
+      <option key={obligacion.id} value={obligacion.id}>
+        {obligacion.nombre}
+      </option>
+    ))}
+  </select>
   <button
      className="btn-guardar"
     onClick={crearAlerta}
@@ -2691,6 +2713,7 @@ const data = await responseLista.json()
   <option value="true">Activo</option>
   <option value="false">Inactivo</option>
   </select>
+
 <div className="botones-formulario">
   <button
     className="btn-guardar"
