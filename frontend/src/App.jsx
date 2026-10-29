@@ -103,7 +103,8 @@ const [mostrarFormularioNuevoRiesgo, setMostrarFormularioNuevoRiesgo] = useState
 const [nuevoRiesgo, setNuevoRiesgo] = useState({
   nombre: '',
   nivel: 'Bajo',
-  estado: 'Abierto'
+  estado: 'Abierto',
+  obligacion_id: null
 })
 const [mostrarFormularioNuevoControl, setMostrarFormularioNuevoControl] = useState(false)
 const [nuevoControl, setNuevoControl] = useState({
@@ -723,7 +724,8 @@ const riesgoCreado = await respuesta.json()
     setNuevoRiesgo({
       nombre: '',
       nivel: 'Bajo',
-      estado: 'Abierto'
+      estado: 'Abierto',
+      obligacion_id: null
 })
     setMostrarFormularioNuevoRiesgo(false)
     alert('Riesgo creado correctamente')
@@ -1949,17 +1951,39 @@ return (
   <option value="Critico">Crítico</option>
   </select>
   <label>Estado</label>
-  <input
-   type="text"
-   placeholder="Escribe el estado del riesgo"
-   value={nuevoRiesgo.estado}
-   onChange={(e) =>
-   setNuevoRiesgo({
-   ...nuevoRiesgo,
-   estado: e.target.value
-    })
-  }
-/>
+  <select
+    value={nuevoRiesgo.estado}
+    onChange={(e) =>
+      setNuevoRiesgo({
+        ...nuevoRiesgo,
+        estado: e.target.value
+      })
+    }
+  >
+    <option value="Abierto">Abierto</option>
+    <option value="En tratamiento">En tratamiento</option>
+    <option value="Mitigado">Mitigado</option>
+    <option value="Cerrado">Cerrado</option>
+  </select>
+  <label>Obligación relacionada</label>
+  <select
+    value={nuevoRiesgo.obligacion_id ?? ''}
+    onChange={(e) =>
+      setNuevoRiesgo({
+        ...nuevoRiesgo,
+        obligacion_id: e.target.value === ''
+          ? null
+          : Number(e.target.value)
+      })
+    }
+  >
+    <option value="">Sin obligación</option>
+    {obligaciones.map((obligacion) => (
+      <option key={obligacion.id} value={obligacion.id}>
+        {obligacion.nombre}
+      </option>
+    ))}
+  </select>
 <div className="botones-formulario">
   <button
    className="btn-guardar"
