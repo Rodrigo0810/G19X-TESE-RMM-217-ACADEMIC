@@ -854,7 +854,7 @@ const alertaCreada = await respuesta.json()
 }
 const crearDepartamento = async () => {
   if (!nuevoDepartamento.nombre.trim()) {
-    alert('Escribe el nombre del departamento')
+    mostrarNotificacion('Escribe el nombre del departamento', 'info')
     return
   }
   try {
@@ -890,16 +890,16 @@ const listaActualizada = await respuestaLista.json()
       activo: true
 })
     setMostrarFormularioNuevoDepartamento(false)
-    alert('Departamento registrado correctamente')
+    mostrarNotificacion('Departamento registrado correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear departamento:', error)
-    alert('Ocurrió un error al registrar el departamento')
+    mostrarNotificacion('Ocurrió un error al registrar el departamento', 'error')
   }
 }
 const guardarEdicionDepartamento = async () => {
   if (!departamentoEditando) return
   if (!departamentoEditando.nombre.trim()) {
-    alert('Escribe el nombre del departamento')
+    mostrarNotificacion('Escribe el nombre del departamento', 'info')
     return
   }
   try {
@@ -934,10 +934,10 @@ const respuestaLista = await fetch(
 const listaActualizada = await respuestaLista.json()
     setDepartamentos(listaActualizada)
     setDepartamentoEditando(null)
-    alert('Departamento actualizado correctamente')
+    mostrarNotificacion('Departamento actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar departamento:', error)
-    alert('No se pudo actualizar el departamento')
+    mostrarNotificacion('No se pudo actualizar el departamento', 'error')
   }
 }
 const eliminarIndicador = async (id) => {
@@ -1488,10 +1488,10 @@ const datosError = await respuesta.json().catch(() => ({}))
     anteriores.filter((departamento) => departamento.id !== id)
 )
   setDepartamentoEditando(null)
-    alert('Departamento eliminado correctamente')
+    mostrarNotificacion('Departamento eliminado correctamente', 'exito')
   } catch (error) {
     console.error('Error al eliminar departamento:', error)
-    alert(error.message)
+    mostrarNotificacion(error.message, 'error')
   }
 }
 if (!token) {
