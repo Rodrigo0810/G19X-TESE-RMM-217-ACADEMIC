@@ -645,7 +645,7 @@ const guardarEdicionRiesgo = async () => {
     return
 }
   if (!riesgoEditando.nombre.trim()) {
-    alert('Escribe el nombre del riesgo')
+    mostrarNotificacion('Escribe el nombre del riesgo', 'info')
     return
 }
   try {
@@ -673,10 +673,10 @@ const riesgoActualizado = await respuesta.json()
   )
 )
    setRiesgoEditando(null)
-    alert('Riesgo actualizado correctamente')
+    mostrarNotificacion('Riesgo actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar riesgo:', error)
-    alert('Ocurrió un error al actualizar el riesgo')
+    mostrarNotificacion('Ocurrió un error al actualizar el riesgo', 'error')
   }
 }
 const eliminarRiesgo = async (id) => {
@@ -701,15 +701,15 @@ const datosError = await respuesta.json()
    setRiesgos((anteriores) =>
    anteriores.filter((riesgo) => riesgo.id !== id)
   )
-    alert('Riesgo eliminado correctamente')
+    mostrarNotificacion('Riesgo eliminado correctamente', 'exito')
   } catch (error) {
     console.error('Error al eliminar riesgo:', error)
-    alert(error.message)
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const crearRiesgo = async () => {
   if (!nuevoRiesgo.nombre.trim()) {
-    alert('Escribe el nombre del riesgo')
+    mostrarNotificacion('Escribe el nombre del riesgo', 'info')
     return
   }
   try {
@@ -742,10 +742,10 @@ const riesgoCreado = await respuesta.json()
       obligacion_id: null
 })
     setMostrarFormularioNuevoRiesgo(false)
-    alert('Riesgo creado correctamente')
+    mostrarNotificacion('Riesgo creado correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear riesgo:', error)
-    alert('Ocurrió un error al crear el riesgo')
+    mostrarNotificacion('Ocurrió un error al crear el riesgo', 'error')
   }
 }
 const guardarEdicionAlerta = async () => {
