@@ -751,7 +751,7 @@ const riesgoCreado = await respuesta.json()
 const guardarEdicionAlerta = async () => {
   if (!alertaEditando) return
   if (!alertaEditando.mensaje.trim()) {
-    alert('Escribe el mensaje de la alerta')
+    mostrarNotificacion('Escribe el mensaje de la alerta', 'info')
     return
   }
   try {
@@ -779,10 +779,10 @@ const alertaActualizada = await respuesta.json()
   )
 )
     setAlertaEditando(null)
-    alert('Alerta actualizada correctamente')
+    mostrarNotificacion('Alerta actualizada correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar alerta:', error)
-    alert('Ocurrió un error al actualizar la alerta')
+    mostrarNotificacion('Ocurrió un error al actualizar la alerta', 'error')
   }
 }
 const eliminarAlerta = async (id) => {
@@ -807,15 +807,15 @@ const datosError = await respuesta.json()
     setAlertas((anteriores) =>
     anteriores.filter((alerta) => alerta.id !== id)
 )
-    alert('Alerta eliminada correctamente')
+    mostrarNotificacion('Alerta eliminada correctamente', 'exito')
   } catch (error) {
     console.error('Error al eliminar alerta:', error)
-    alert(error.message)
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const crearAlerta = async () => {
   if (!nuevaAlerta.mensaje.trim()) {
-    alert('Escribe el mensaje de la alerta')
+    mostrarNotificacion('Escribe el mensaje de la alerta', 'info')
     return
   }
   try {
@@ -846,10 +846,10 @@ const alertaCreada = await respuesta.json()
       obligacion_id: null
     })
     setMostrarFormularioNuevaAlerta(false)
-    alert('Alerta creada correctamente')
+    mostrarNotificacion('Alerta creada correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear alerta:', error)
-    alert('Ocurrió un error al crear la alerta')
+    mostrarNotificacion('Ocurrió un error al crear la alerta', 'error')
   }
 }
 const crearDepartamento = async () => {
