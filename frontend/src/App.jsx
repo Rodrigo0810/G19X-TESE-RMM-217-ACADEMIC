@@ -1342,7 +1342,7 @@ const listaActualizada = await respuestaLista.json()
 }
 const crearEvidencia = async () => {
   if (!nuevaEvidencia.nombre.trim()) {
-    alert('Escribe el nombre de la evidencia')
+    mostrarNotificacion('Escribe el nombre de la evidencia', 'info')
     return
   }
   try {
@@ -1387,16 +1387,16 @@ const listaActualizada = await respuestaLista.json()
       estado: 'Pendiente'
 })
     setMostrarFormularioNuevaEvidencia(false)
-    alert('Evidencia registrada correctamente')
+    mostrarNotificacion('Evidencia registrada correctamente', 'exito')
   } catch (error) {
     console.error('Error al registrar evidencia:', error)
-    alert('No se pudo registrar la evidencia. Revisa la consola.')
+    mostrarNotificacion('No se pudo registrar la evidencia. Revisa la consola.', 'error')
   }
 }
 const guardarEdicionEvidencia = async () => {
   if (!evidenciaEditando) return
   if (!evidenciaEditando.nombre.trim()) {
-    alert('Escribe el nombre de la evidencia')
+    mostrarNotificacion('Escribe el nombre de la evidencia', 'info')
     return
   }
   try {
@@ -1430,10 +1430,10 @@ const respuestaLista = await fetch(
 const listaActualizada = await respuestaLista.json()
     setEvidencias(listaActualizada)
     setEvidenciaEditando(null)
-    alert('Evidencia actualizada correctamente')
+    mostrarNotificacion('Evidencia actualizada correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar evidencia:', error)
-    alert('No se pudo actualizar la evidencia. Revisa la consola.')
+    mostrarNotificacion('No se pudo actualizar la evidencia. Revisa la consola.', 'error')
   }
 }
 const eliminarEvidencia = async (id) => {
@@ -1459,10 +1459,10 @@ const datosError = await respuesta.json().catch(() => ({}))
       anteriores.filter((evidencia) => evidencia.id !== id)
 )
     setEvidenciaEditando(null)
-    alert('Evidencia eliminada correctamente')
+    mostrarNotificacion('Evidencia eliminada correctamente', 'exito')
   } catch (error) {
     console.error('Error al eliminar evidencia:', error)
-    alert(error.message)
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const eliminarDepartamento = async (id) => {
