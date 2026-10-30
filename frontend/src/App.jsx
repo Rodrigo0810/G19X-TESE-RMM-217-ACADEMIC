@@ -1058,16 +1058,16 @@ const datosError = await respuesta.json().catch(() => ({}))
   if (rolEditando?.id === id) {
     setRolEditando(null)
 }
-    alert('Rol eliminado correctamente')
+    mostrarNotificacion('Rol eliminado correctamente', 'exito')
   } catch (error) {
     console.error('Error al eliminar rol:', error)
-    alert(error.message)
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const guardarEdicionRol = async () => {
   if (!rolEditando) return
   if (!rolEditando.nombre.trim()) {
-    alert('Escribe el nombre del rol')
+    mostrarNotificacion('Escribe el nombre del rol', 'info')
     return
   }
   try {
@@ -1101,10 +1101,10 @@ const respuestaLista = await fetch(
 const listaActualizada = await respuestaLista.json()
     setRoles(listaActualizada)
     setRolEditando(null)
-    alert('Rol actualizado correctamente')
+    mostrarNotificacion('Rol actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar rol:', error)
-    alert('No se pudo actualizar el rol. Revisa la consola.')
+    mostrarNotificacion('No se pudo actualizar el rol. Revisa la consola.', 'error')
   }
 }
 const eliminarUsuario = async (id) => {
@@ -1237,7 +1237,7 @@ const listaActualizada = await respuestaLista.json()
 }
 const crearRol = async () => {
   if (!nuevoRol.nombre.trim()) {
-    alert('Escribe el nombre del rol')
+    mostrarNotificacion('Escribe el nombre del rol', 'info')
     return
   }
   try {
@@ -1272,11 +1272,11 @@ const listaActualizada = await respuestaLista.json()
       descripcion: ''
     })
     setMostrarFormularioNuevoRol(false)
-    alert('Rol registrado correctamente')
+    mostrarNotificacion('Rol registrado correctamente', 'exito')
 
   } catch (error) {
     console.error('Error al registrar rol:', error)
-    alert('No se pudo registrar el rol. Revisa la consola.')
+    mostrarNotificacion('No se pudo registrar el rol. Revisa la consola.', 'error')
   }
 }
 const crearIndicador = async () => {
