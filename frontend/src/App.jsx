@@ -1134,15 +1134,15 @@ const respuestaLista = await fetch(
 }
 const datos = await respuestaLista.json()
     setUsuarios(datos)
-    alert('Usuario eliminado correctamente')
+    mostrarNotificacion('Usuario eliminado correctamente', 'exito')
   } catch (error) {
     console.error('Error al eliminar usuario:', error)
-    alert('No se pudo eliminar el usuario')
+    mostrarNotificacion('No se pudo eliminar el usuario', 'error')
   }
 }
 const actualizarUsuario = async () => {
   if (!usuarioEditando.nombre.trim() || !usuarioEditando.correo.trim()) {
-    alert('El nombre y el correo son obligatorios')
+    mostrarNotificacion('El nombre y el correo son obligatorios', 'info')
     return
   }
 try {
@@ -1179,19 +1179,19 @@ const respuestaLista = await fetch(
 const datos = await respuestaLista.json()
     setUsuarios(datos)
     setUsuarioEditando(null)
-    alert('Usuario actualizado correctamente')
+    mostrarNotificacion('Usuario actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar usuario:', error)
-    alert('No se pudo actualizar el usuario')
+    mostrarNotificacion('No se pudo actualizar el usuario', 'error')
   }
 }
 const crearUsuario = async () => {
   if (!nuevoUsuario.nombre.trim() || !nuevoUsuario.correo.trim()) {
-    alert('Escribe el nombre y correo del usuario')
+    mostrarNotificacion('Escribe el nombre y correo del usuario', 'info')
     return
   }
   if (nuevoUsuario.contrasena.length < 12 || nuevoUsuario.contrasena.length > 128) {
-    alert('La contraseña debe tener entre 12 y 128 caracteres')
+    mostrarNotificacion('La contraseña debe tener entre 12 y 128 caracteres', 'info')
     return
   }
   try {
@@ -1229,10 +1229,10 @@ const listaActualizada = await respuestaLista.json()
       activo: true
     })
     setMostrarFormularioNuevoUsuario(false)
-    alert('Usuario registrado correctamente')
+    mostrarNotificacion('Usuario registrado correctamente', 'exito')
   } catch (error) {
     console.error('Error al registrar usuario:', error)
-    alert('No se pudo registrar el usuario. Revisa la consola.')
+    mostrarNotificacion('No se pudo registrar el usuario. Revisa la consola.', 'error')
   }
 }
 const crearRol = async () => {
