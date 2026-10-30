@@ -971,16 +971,16 @@ const listaActualizada = await respuestaLista.json()
     if (indicadorEditando?.id === id) {
       setIndicadorEditando(null)
 }
-    alert('Indicador eliminado correctamente')
+    mostrarNotificacion('Indicador eliminado correctamente', 'exito')
   } catch (error) {
     console.error('Error al eliminar indicador:', error)
-    alert('No se pudo eliminar el indicador. Revisa la consola.')
+    mostrarNotificacion('No se pudo eliminar el indicador. Revisa la consola.', 'error')
   }
 }
 const actualizarIndicador = async () => {
   if (!indicadorEditando) return
   if (!indicadorEditando.nombre.trim()) {
-    alert('Escribe el nombre del indicador')
+    mostrarNotificacion('Escribe el nombre del indicador', 'info')
     return
   }
   if (
@@ -988,7 +988,7 @@ const actualizarIndicador = async () => {
     indicadorEditando.periodo_fin &&
     indicadorEditando.periodo_fin < indicadorEditando.periodo_inicio
   ) {
-    alert('El periodo fin no puede ser anterior al periodo inicio')
+    mostrarNotificacion('El periodo fin no puede ser anterior al periodo inicio', 'info')
     return
   }
   try {
@@ -1027,10 +1027,10 @@ const respuestaLista = await fetch(
 const listaActualizada = await respuestaLista.json()
     setIndicadores(listaActualizada)
     setIndicadorEditando(null)
-    alert('Indicador actualizado correctamente')
+    mostrarNotificacion('Indicador actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar indicador:', error)
-    alert('No se pudo actualizar el indicador. Revisa la consola.')
+    mostrarNotificacion('No se pudo actualizar el indicador. Revisa la consola.', 'error')
   }
 }
 const eliminarRol = async (id) => {
@@ -1281,7 +1281,7 @@ const listaActualizada = await respuestaLista.json()
 }
 const crearIndicador = async () => {
   if (!nuevoIndicador.nombre.trim()) {
-    alert('Escribe el nombre del indicador')
+    mostrarNotificacion('Escribe el nombre del indicador', 'info')
     return
   }
   if (
@@ -1289,7 +1289,7 @@ const crearIndicador = async () => {
     nuevoIndicador.periodo_fin &&
     nuevoIndicador.periodo_fin < nuevoIndicador.periodo_inicio
   ) {
-    alert('El periodo fin no puede ser anterior al periodo inicio')
+    mostrarNotificacion('El periodo fin no puede ser anterior al periodo inicio', 'info')
     return
   }
   try {
@@ -1334,10 +1334,10 @@ const listaActualizada = await respuestaLista.json()
       periodo_fin: ''
 })
     setMostrarFormularioNuevoIndicador(false)
-    alert('Indicador registrado correctamente')
+    mostrarNotificacion('Indicador registrado correctamente', 'exito')
   } catch (error) {
     console.error('Error al registrar indicador:', error)
-    alert('No se pudo registrar el indicador. Revisa la consola.')
+    mostrarNotificacion('No se pudo registrar el indicador. Revisa la consola.', 'error')
   }
 }
 const crearEvidencia = async () => {
