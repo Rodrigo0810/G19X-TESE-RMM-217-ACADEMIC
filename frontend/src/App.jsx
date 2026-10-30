@@ -568,10 +568,10 @@ const controlActualizado = await respuesta.json()
   )
 )
   setControlEditando(null)
-    alert('Control actualizado correctamente')
+    mostrarNotificacion('Control actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar control:', error)
-    alert('Ocurrió un error al actualizar el control')
+    mostrarNotificacion('Ocurrió un error al actualizar el control', 'error')
   }
 }
 const eliminarControl = async (id) => {
@@ -596,15 +596,15 @@ const datosError = await respuesta.json()
   setControles((anteriores) =>
   anteriores.filter((control) => control.id !== id)
 )
-  alert('Control eliminado correctamente')
+  mostrarNotificacion('Control eliminado correctamente', 'exito')
   } catch (error) {
   console.error('Error al eliminar control:', error)
-  alert(error.message)
+  mostrarNotificacion(error.message, 'error')
 }
 }
 const crearControl = async () => {
   if (!nuevoControl.nombre.trim()) {
-    alert('Escribe el nombre del control')
+    mostrarNotificacion('Escribe el nombre del control', 'info')
     return
   }
   try {
@@ -634,10 +634,10 @@ setNuevoControl({
       obligacion_id: null
 })
   setMostrarFormularioNuevoControl(false)
-    alert('Control creado correctamente')
+    mostrarNotificacion('Control creado correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear control:', error)
-    alert('Ocurrió un error al crear el control')
+    mostrarNotificacion('Ocurrió un error al crear el control', 'error')
   }
 }
 const guardarEdicionRiesgo = async () => {
