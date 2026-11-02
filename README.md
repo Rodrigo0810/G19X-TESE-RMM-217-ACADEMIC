@@ -108,6 +108,89 @@ Cuando el servidor esté funcionando, la documentación interactiva estará disp
 http://127.0.0.1:8000/docs
 
 
+### Configuracion de CORS para desarrollo local
+
+El backend utiliza `CORSMiddleware` para controlar desde que
+origenes puede realizar solicitudes el frontend.
+
+De manera predeterminada, se permiten los siguientes origenes:
+
+- `http://localhost:5173`
+- `http://127.0.0.1:5173`
+
+Si Vite utiliza otra direccion o puerto, se puede configurar
+la variable `CORS_ORIGINS` en `backend/.env`, indicando los
+origenes permitidos separados por comas.
+
+Ejemplo:
+
+```env
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+Esta variable es opcional para el desarrollo local con los
+dos origenes predeterminados.
+
+Los origenes deben coincidir con la direccion que se utiliza
+para abrir el frontend en el navegador, incluyendo el
+protocolo y el puerto.
+
+Despues de modificar `backend/.env`, se debe reiniciar
+FastAPI para aplicar la configuracion.
+
+Por seguridad, no se recomienda utilizar `*` como origen
+permitido cuando se habilitan credenciales. En despliegues
+reales se deben indicar explicitamente los dominios autorizados.
+
+### Puertos alternativos para una instalacion local
+
+Si el puerto `8000` esta ocupado, se puede iniciar FastAPI en otro
+puerto disponible. Por ejemplo, desde la carpeta `backend` y con
+el entorno virtual activado:
+
+```powershell
+python -m uvicorn main:app --host 127.0.0.1 --port 8001
+```
+
+La documentacion de la API estara disponible en
+`http://127.0.0.1:8001/docs`.
+
+Si el puerto `5173` esta ocupado, se puede iniciar Vite desde
+la carpeta `frontend` en el puerto `5174`:
+
+```powershell
+npm run dev -- --host 127.0.0.1 --port 5174 --strictPort
+```
+
+Cuando el backend utilice el puerto `8001`, crear el archivo
+`frontend/.env.local` con el siguiente contenido:
+
+```env
+VITE_API_URL=http://127.0.0.1:8001
+```
+
+Este archivo es de configuracion local y no debe incluir
+credenciales ni claves secretas. Reiniciar Vite despues de
+modificarlo para aplicar la variable.
+
+Para permitir el origen del frontend de pruebas, agregar o
+actualizar en `backend/.env`:
+
+```env
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://127.0.0.1:5174
+```
+
+Reiniciar FastAPI despues de modificar `backend/.env`.
+
+Los puertos `8001` y `5174` son ejemplos utilizados durante
+la instalacion limpia. Pueden emplearse otros puertos libres,
+siempre que `VITE_API_URL` apunte al backend correcto y que
+`CORS_ORIGINS` incluya exactamente el origen del frontend.
+
+No es necesario detener procesos ajenos al proyecto para
+utilizar estos puertos alternativos.
+
+---
 ## Instalación y ejecución del frontend
 
 ### Requisitos previos
@@ -147,6 +230,51 @@ Para utilizar las funcionalidades que consultan o modifican información, el bac
 
 
 ## Configuración de la base de datos
+
+### Variables de conexion PostgreSQL
+
+Antes de iniciar FastAPI, se debe crear `backend/.env` a partir de
+`backend/.env.example` y configurar los datos de la instancia local
+de PostgreSQL.
+
+Ejemplo de estructura (sustituir los valores por los propios):
+
+```env
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_NAME=compliance_dashboard
+DB_USER=usuario_postgresql
+DB_PASSWORD=REEMPLAZAR_POR_CONTRASENA_REAL
+JWT_SECRET_KEY=REEMPLAZAR_POR_CLAVE_ALEATORIA_SEGURA
+JWT_ALGORITHM=HS256
+```
+
+`DB_PASSWORD` debe contener la contrasena real del usuario PostgreSQL
+indicado en `DB_USER`. No es la contrasena de inicio de sesion del
+dashboard. El usuario debe existir en PostgreSQL y disponer de los
+permisos necesarios sobre la base de datos y sus tablas.
+
+El archivo `.env.example` es una plantilla y no debe utilizarse
+como archivo de configuracion definitivo sin revisar sus valores.
+
+**Importante:** no publicar `backend/.env`, contrasenas, claves JWT
+ni capturas que muestren credenciales. No incluir secretos reales
+en commits de Git.
+
+Para comprobar la conexion, desde la carpeta `backend` y con el
+entorno virtual activado, ejecutar:
+
+```powershell
+python probar_conexion.py
+```
+
+Si la conexion falla, verificar que PostgreSQL este iniciado,
+que `DB_HOST` y `DB_PORT` sean correctos, que la base indicada
+en `DB_NAME` exista y que `DB_USER` y `DB_PASSWORD` correspondan
+a una cuenta con permisos suficientes.
+
+En una instalacion de prueba se recomienda utilizar una base
+independiente para evitar modificar registros de produccion.
 
 El proyecto utiliza PostgreSQL para almacenar la información del Dashboard Ejecutivo de Cumplimiento Normativo.
 
@@ -404,7 +532,7 @@ La inteligencia artificial se utilizó como herramienta de asistencia. Las propu
 | Frontend React | Proponer ajustes de JSX, componentes y estructura del dashboard | Revisión del código, compilación y pruebas en navegador |
 | Refactorización | Apoyar la extracción de `Dashboard.jsx` y `Obligaciones.jsx` | Verificación de filtros, gráficas, formularios y permisos |
 | Métricas | Apoyar la centralización de cálculos en `utils/metricas.js` | Revisión de indicadores y alertas |
-| Depuración | Analizar advertencias y proponer correcciones | Ejecución de ESLint y compilación |
+| Depuración | Analizar advertencias y proponer correcciones | Ejecución de oxlint y compilación |
 | Seguridad | Apoyar la interpretación de permisos y la preparación de pruebas | Comprobación de restricciones según los roles |
 | Documentación | Estructurar instrucciones de uso y explicaciones técnicas | Comparación con comandos, funcionalidades y README existentes |
 

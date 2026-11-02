@@ -1,3 +1,9 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Cargar la configuracion local antes de preparar CORS.
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 from fastapi import FastAPI, Depends
 from dependencias_auth import obtener_usuario_id, verificar_administrador
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,7 +24,14 @@ from routers import autenticacion
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        origen.strip()
+        for origen in os.getenv(
+            "CORS_ORIGINS",
+            "http://localhost:5173,http://127.0.0.1:5173"
+        ).split(",")
+        if origen.strip()
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -45,7 +45,7 @@ SELECT
     'Revision documental anual',
     'Revisar la documentacion normativa de ejemplo',
     'Responsable Legal',
-    '2026-10-15',
+    (CURRENT_DATE + 5),
     'Pendiente',
     'Medio'
 FROM normativas n, departamentos d
@@ -65,7 +65,7 @@ SELECT
     'Validacion de controles financieros',
     'Verificar los controles internos financieros',
     'Responsable Finanzas',
-    '2026-10-20',
+    (CURRENT_DATE + 15),
     'En progreso',
     'Alto'
 FROM normativas n, departamentos d
@@ -85,7 +85,7 @@ SELECT
     'Actualizacion de accesos',
     'Verificar los permisos de acceso de los sistemas',
     'Responsable Tecnologia',
-    '2026-09-15',
+    (CURRENT_DATE - 5),
     'Vencida',
     'Critico'
 FROM normativas n, departamentos d
@@ -105,8 +105,8 @@ SELECT
     'Auditoria interna de tecnologia',
     'Revision de controles de acceso de ejemplo',
     d.id,
-    '2026-09-01',
-    '2026-09-10',
+    (CURRENT_DATE - 30),
+    (CURRENT_DATE - 20),
     'Completada',
     'Hallazgos identificados'
 FROM departamentos d
@@ -123,8 +123,8 @@ SELECT
     'Auditoria financiera',
     'Revision de procesos financieros de ejemplo',
     d.id,
-    '2026-10-05',
-    '2026-10-12',
+    (CURRENT_DATE + 10),
+    (CURRENT_DATE + 17),
     'Programada'
 FROM departamentos d
 WHERE d.nombre = 'Finanzas'
@@ -183,7 +183,7 @@ SELECT
     'PDF',
     'documentos/informe_revision.pdf',
     'Evidencia ficticia para pruebas',
-    '2026-09-10',
+    (CURRENT_DATE - 20),
     'Validada'
 FROM obligaciones o
 JOIN controles c ON c.obligacion_id = o.id
@@ -204,7 +204,7 @@ SELECT
     'CSV',
     'documentos/registro_accesos.csv',
     'Registro ficticio para pruebas',
-    '2026-09-12',
+    (CURRENT_DATE - 18),
     'Pendiente'
 FROM obligaciones o
 JOIN controles c ON c.obligacion_id = o.id
@@ -265,10 +265,21 @@ SELECT
     'Cumplimiento general',
     'Porcentaje de obligaciones cumplidas en el conjunto de prueba',
     'Cumplimiento',
-    33.33,
+    (
+        SELECT COALESCE(
+            ROUND(
+                100.0 * COUNT(*) FILTER (
+                    WHERE estado = 'Cumplida'
+                ) / NULLIF(COUNT(*), 0),
+                2
+            ),
+            0
+        )
+        FROM obligaciones
+    ),
     '%',
-    '2026-09-01',
-    '2026-09-30'
+    (CURRENT_DATE - 30),
+    (CURRENT_DATE - 1)
 WHERE NOT EXISTS (
     SELECT 1 FROM indicadores
     WHERE nombre = 'Cumplimiento general'
@@ -281,10 +292,18 @@ SELECT
     'Obligaciones vencidas',
     'Cantidad de obligaciones vencidas en los datos de prueba',
     'Obligaciones',
-    1,
+    (
+        SELECT COUNT(*)
+        FROM obligaciones
+        WHERE estado = 'Vencida'
+           OR (
+               estado <> 'Cumplida'
+               AND fecha_limite < CURRENT_DATE
+           )
+    ),
     'Cantidad',
-    '2026-09-01',
-    '2026-09-30'
+    (CURRENT_DATE - 30),
+    (CURRENT_DATE - 1)
 WHERE NOT EXISTS (
     SELECT 1 FROM indicadores
     WHERE nombre = 'Obligaciones vencidas'
@@ -297,10 +316,14 @@ SELECT
     'Riesgos criticos',
     'Cantidad de riesgos criticos en los datos de prueba',
     'Riesgos',
-    1,
+    (
+        SELECT COUNT(*)
+        FROM riesgos
+        WHERE nivel = 'Critico'
+    ),
     'Cantidad',
-    '2026-09-01',
-    '2026-09-30'
+    (CURRENT_DATE - 30),
+    (CURRENT_DATE - 1)
 WHERE NOT EXISTS (
     SELECT 1 FROM indicadores
     WHERE nombre = 'Riesgos criticos'
