@@ -1,6 +1,6 @@
 from datetime import date
 from typing import Optional, Literal
-from pydantic import BaseModel, Field
+from pydantic import field_validator, BaseModel, Field
 
 class AuditoriaCrear(BaseModel):
     nombre: str = Field(min_length=1, max_length=200)
@@ -15,3 +15,7 @@ class AuditoriaCrear(BaseModel):
         "Cancelada"
     ] = "Programada"
     resultado: Optional[str] = None
+    @field_validator("nombre", mode="before")
+    @classmethod
+    def validar_nombre(cls, valor):
+        return valor.strip() if isinstance(valor, str) else valor

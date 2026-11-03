@@ -1,11 +1,11 @@
 from typing import Optional, Literal
-from pydantic import BaseModel, Field
+from pydantic import field_validator, BaseModel, Field
 
 class RiesgoCrear(BaseModel):
     obligacion_id: Optional[int] = None
     auditoria_id: Optional[int] = None
     control_id: Optional[int] = None
-    nombre: str = Field(..., max_length=200)
+    nombre: str = Field(..., min_length=1, max_length=200)
     descripcion: Optional[str] = None
     nivel: Literal[
         "Bajo",
@@ -21,3 +21,7 @@ class RiesgoCrear(BaseModel):
         "Mitigado",
         "Cerrado"
     ] = "Abierto"
+    @field_validator("nombre", mode="before")
+    @classmethod
+    def validar_nombre(cls, valor):
+        return valor.strip() if isinstance(valor, str) else valor
