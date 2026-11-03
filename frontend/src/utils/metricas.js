@@ -4,6 +4,40 @@
  * Recibe datos y filtros sin acceder a React, APIs o estado global.
  * La fecha se recibe como parametro para facilitar las pruebas.
  */
+const obtenerFechaLimite = (obligacion) => {
+  if (!obligacion.fecha_limite) return null
+
+  const fechaTexto = String(obligacion.fecha_limite).slice(0, 10)
+  const partes = fechaTexto.split('-').map(Number)
+
+  if (partes.length !== 3 || partes.some(Number.isNaN)) {
+    return null
+  }
+
+  const [anio, mes, dia] = partes
+  const fecha = new Date(anio, mes - 1, dia)
+
+  if (
+    fecha.getFullYear() !== anio ||
+    fecha.getMonth() !== mes - 1 ||
+    fecha.getDate() !== dia
+  ) {
+    return null
+  }
+
+  return fecha
+}
+export function estaVencida(obligacion, fechaReferencia) {
+  if (obligacion.estado === 'Vencida') return true
+  if (obligacion.estado === 'Cumplida') return false
+
+  const hoy = new Date(fechaReferencia)
+  hoy.setHours(0, 0, 0, 0)
+
+  const fecha = obtenerFechaLimite(obligacion)
+  return fecha !== null && fecha < hoy
+}
+
 export function calcularMetricas({
   obligaciones = [],
   auditorias = [],
@@ -45,32 +79,7 @@ const hoy = new Date(fechaReferencia)
 hoy.setHours(0, 0, 0, 0)
 const limiteProximos7Dias = new Date(hoy)
 limiteProximos7Dias.setDate(limiteProximos7Dias.getDate() + 7)
-const obtenerFechaLimite = (obligacion) => {
-  if (!obligacion.fecha_limite) return null
-const fechaTexto = String(obligacion.fecha_limite).slice(0, 10)
-const partes = fechaTexto.split('-').map(Number)
-  if (partes.length !== 3 || partes.some(Number.isNaN)) {
-  return null
-  }
-const [anio, mes, dia] = partes
-const fecha = new Date(anio, mes - 1, dia)
-  if (
-    fecha.getFullYear() !== anio ||
-    fecha.getMonth() !== mes - 1 ||
-    fecha.getDate() !== dia
-  ) {
-  return null
-  }
-  return fecha
-}
-const estaVencida = (obligacion) => {
-  if (obligacion.estado === 'Vencida') return true
-  if (obligacion.estado === 'Cumplida') return false
-
-  const fecha = obtenerFechaLimite(obligacion)
-  return fecha !== null && fecha < hoy
-}
-const obligacionesVencidasLista = obligacionesFiltradas.filter(estaVencida)
+const obligacionesVencidasLista = obligacionesFiltradas.filter((obligacion) => estaVencida(obligacion, fechaReferencia))
 const obligacionesProximasAVencer = obligacionesFiltradas.filter(
   (obligacion) => {
 const fecha = obtenerFechaLimite(obligacion)
@@ -78,18 +87,18 @@ const fecha = obtenerFechaLimite(obligacion)
       fecha !== null &&
       fecha >= hoy &&
       fecha <= limiteProximos7Dias &&
-      !estaVencida(obligacion)
+      !estaVencida(obligacion, fechaReferencia)
     )
   }
 )
 const obligacionesPendientes = obligacionesFiltradas.filter(
-  (obligacion) => obligacion.estado === 'Pendiente' && !estaVencida(obligacion)
+  (obligacion) => obligacion.estado === 'Pendiente' && !estaVencida(obligacion, fechaReferencia)
 ).length
 const obligacionesEnProgreso = obligacionesFiltradas.filter(
-  (obligacion) => obligacion.estado === 'En progreso' && !estaVencida(obligacion)
+  (obligacion) => obligacion.estado === 'En progreso' && !estaVencida(obligacion, fechaReferencia)
 ).length
 const obligacionesCumplidas = obligacionesFiltradas.filter(
-  (obligacion) => obligacion.estado === 'Cumplida' && !estaVencida(obligacion)
+  (obligacion) => obligacion.estado === 'Cumplida' && !estaVencida(obligacion, fechaReferencia)
 ).length
 const obligacionesVencidas = obligacionesVencidasLista.length
 // Filtrado conservador: cada relación explícita debe ser compatible con el filtro.

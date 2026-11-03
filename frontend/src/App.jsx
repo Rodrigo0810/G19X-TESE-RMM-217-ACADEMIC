@@ -3406,8 +3406,8 @@ return (
   <td>{usuario.id}</td>
   <td>{usuario.nombre}</td>
   <td>{usuario.correo}</td>
-  <td>{usuario.rol_id}</td>
-  <td>{usuario.departamento_id}</td>
+  <td>{usuario.rol || 'Sin rol'}</td>
+  <td>{usuario.departamento || 'Sin departamento'}</td>
  <td>{usuario.activo ? 'Activo' : 'Inactivo'}</td>
 
 <td>

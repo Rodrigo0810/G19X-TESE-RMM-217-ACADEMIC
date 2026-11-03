@@ -2,7 +2,7 @@ import {
   PieChart, Pie, Cell, BarChart, Bar,
   XAxis, YAxis, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
-import { calcularMetricas } from '../utils/metricas.js'
+import { calcularMetricas, estaVencida } from '../utils/metricas.js'
 
 export default function Dashboard({
   obligaciones,
@@ -434,19 +434,25 @@ return (
 <div className="card">
   <h2>Obligaciones registradas</h2>
   <ul className="obligaciones-lista">
-{obligacionesFiltradas.map((obligacion) => (
-  <li key={obligacion.id}>
-  <strong>{obligacion.nombre}</strong>
-  <span className={`estado-badge estado-${obligacion.estado.toLowerCase().replace(' ', '-')}`}>
-{obligacion.estado}
-  </span>
-  <small>
-    {obligacion.fecha_limite
-      ? `Vence: ${String(obligacion.fecha_limite).slice(0, 10)}`
-      : 'Sin fecha asignada'}
-  </small>
-  </li>
-))}
+{obligacionesFiltradas.map((obligacion) => {
+  const estadoVisual = estaVencida(obligacion, fechaReferencia)
+    ? 'Vencida'
+    : obligacion.estado
+
+  return (
+    <li key={obligacion.id}>
+      <strong>{obligacion.nombre}</strong>
+      <span className={`estado-badge estado-${estadoVisual.toLowerCase().replace(' ', '-')}`}>
+        {estadoVisual}
+      </span>
+      <small>
+        {obligacion.fecha_limite
+          ? `Vence: ${String(obligacion.fecha_limite).slice(0, 10)}`
+          : 'Sin fecha asignada'}
+      </small>
+    </li>
+  )
+})}
   </ul>
 </div>
 
