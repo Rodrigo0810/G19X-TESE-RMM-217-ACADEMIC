@@ -2616,8 +2616,7 @@ return (
    }
 >
   <option value="Pendiente">Pendiente</option>
-  <option value="En revisión">En revisión</option>
-  <option value="Aprobada">Aprobada</option>
+  <option value="Validada">Validada</option>
   <option value="Rechazada">Rechazada</option>
   </select>
   <button
@@ -2706,8 +2705,7 @@ return (
   }
 >
   <option value="Pendiente">Pendiente</option>
-  <option value="En revisión">En revisión</option>
-  <option value="Aprobada">Aprobada</option>
+  <option value="Validada">Validada</option>
   <option value="Rechazada">Rechazada</option>
   </select>
   <button
