@@ -3,15 +3,15 @@ function Notificacion({ mensaje, tipo = 'info', onCerrar }) {
 
   const tipos = {
     exito: {
-      titulo: 'Operacion realizada',
+      titulo: 'Operación realizada',
       clase: 'notificacion-exito'
     },
     error: {
-      titulo: 'No se pudo completar la operacion',
+      titulo: 'No se pudo completar la operación',
       clase: 'notificacion-error'
     },
     info: {
-      titulo: 'Informacion',
+      titulo: 'Información',
       clase: 'notificacion-info'
     }
   }
@@ -33,7 +33,7 @@ function Notificacion({ mensaje, tipo = 'info', onCerrar }) {
         type="button"
         className="notificacion-cerrar"
         onClick={onCerrar}
-        aria-label="Cerrar notificacion"
+        aria-label="Cerrar notificación"
       >
         X</button>
     </div>

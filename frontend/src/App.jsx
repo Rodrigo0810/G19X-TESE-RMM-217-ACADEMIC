@@ -6,6 +6,40 @@ import Notificacion from './components/Notificacion.jsx'
 import './App.css'
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
+async function leerError(respuesta) {
+  try {
+    const datos = await respuesta.json()
+
+    if (typeof datos.detail === 'string' && datos.detail.trim()) {
+      return datos.detail.trim()
+    }
+
+    if (Array.isArray(datos.detail) && datos.detail.length > 0) {
+      const mensajes = datos.detail.map((error) => {
+        const campo = Array.isArray(error.loc)
+          ? error.loc.filter((parte) => parte !== 'body').join('.')
+          : ''
+
+        const motivo = typeof error.msg === 'string'
+          ? error.msg
+          : 'Valor no válido'
+
+        return campo ? `${campo}: ${motivo}` : motivo
+      })
+
+      return mensajes.join('; ')
+    }
+
+    if (typeof datos.message === 'string' && datos.message.trim()) {
+      return datos.message.trim()
+    }
+  } catch {
+    // La respuesta no contiene JSON válido.
+  }
+
+  return `El servidor respondió con el código ${respuesta.status}.`
+}
+
 function App() {
 const [notificacion, setNotificacion] = useState(null)
 
@@ -139,150 +173,84 @@ const [nuevaObligacion, setNuevaObligacion] = useState({
   responsable: ''
 })
 useEffect(() => {
-if (!token) return
-const encabezadosAuth = { Authorization: `Bearer ${token}` }
-fetch(`${API_URL}/obligaciones`, {
-  headers: encabezadosAuth
-})
-   .then((response) => response.json())
-  .then((data) => {
-  setObligaciones(data)
-})
-   .catch((error) => {
-   console.error('Error al obtener obligaciones:', error)
-})
-fetch(`${API_URL}/auditorias`, {
-  headers: encabezadosAuth
-})
-   .then((response) => response.json())
-   .then((data) => {
-      setAuditorias(data)
-})
-   .catch((error) => {
-    console.error('Error al obtener auditorias:', error)
-})
-fetch(`${API_URL}/controles`, {
-  headers: encabezadosAuth
-})
-   .then((response) => response.json())
-   .then((data) => {
-      setControles(data)
-})
-   .catch((error) => {
-    console.error('Error al obtener controles:', error)
-})
-fetch(`${API_URL}/riesgos`, {
-  headers: encabezadosAuth
-})
-   .then((response) => response.json())
-   .then((data) => {
-      setRiesgos(data)
-})
-   .catch((error) => {
-    console.error('Error al obtener riesgos:', error)
-})
-fetch(`${API_URL}/alertas`, {
-  headers: encabezadosAuth
-})
-   .then((response) => response.json())
-   .then((data) => {
-      setAlertas(data)
-})
-   .catch((error) => {
-    console.error('Error al obtener alertas:', error)
-})
-fetch(`${API_URL}/normativas`, {
-  headers: encabezadosAuth
-})
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error('No se pudieron obtener las normativas')
-    }
-    return response.json()
-  })
-  .then((data) => {
-    setNormativas(data)
-  })
-  .catch((error) => {
-    console.error('Error al obtener normativas:', error)
-  })
-fetch(`${API_URL}/indicadores`, {
-  headers: encabezadosAuth
-})
-  .then((respuesta) => {
-    if (!respuesta.ok) {
-      throw new Error('Error al obtener los indicadores')
-    }
-    return respuesta.json()
-  })
-  .then((datos) => {
-    setIndicadores(datos)
-  })
-  .catch((error) => {
-    console.error('Error al cargar indicadores:', error)
-  })
-if (esAdministrador) {
-  fetch(`${API_URL}/roles`, {
-    headers: encabezadosAuth
-  })
-    .then((respuesta) => {
-      if (!respuesta.ok) {
-        throw new Error('Error al obtener los roles')
+  if (!token) return
+
+  let activo = true
+  let sesionExpirada = false
+  const controlador = new AbortController()
+  const encabezados = { Authorization: `Bearer ${token}` }
+
+  const cerrarPorExpiracion = () => {
+    if (!activo || sesionExpirada) return
+
+    sesionExpirada = true
+    activo = false
+    controlador.abort()
+
+    setToken(null)
+    setEsAdministrador(false)
+    setPuedeEditar(false)
+    setCorreoLogin('')
+    setContrasenaLogin('')
+    setVistaActual('dashboard')
+    setErrorLogin('Tu sesión expiró')
+  }
+
+  const cargar = async (ruta, actualizar) => {
+    try {
+      const respuesta = await fetch(`${API_URL}${ruta}`, {
+        headers: encabezados,
+        signal: controlador.signal
+      })
+
+      if (!activo) return
+
+      if (respuesta.status === 401) {
+        cerrarPorExpiracion()
+        return
       }
-      return respuesta.json()
-    })
-    .then((datos) => {
-      setRoles(datos)
-    })
-    .catch((error) => {
-      console.error('Error al cargar roles:', error)
-    })
-  fetch(`${API_URL}/usuarios`, {
-    headers: encabezadosAuth
-  })
-    .then((respuesta) => {
+
       if (!respuesta.ok) {
-        throw new Error('Error al obtener usuarios')
+        throw new Error(await leerError(respuesta))
       }
-      return respuesta.json()
-    })
-    .then((datos) => {
-      setUsuarios(datos)
-    })
-    .catch((error) => {
-      console.error('Error al cargar usuarios:', error)
-    })
-}
-fetch(`${API_URL}/evidencias`, {
-  headers: encabezadosAuth
-})
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error('No se pudieron obtener las evidencias')
+
+      const datos = await respuesta.json()
+
+      if (!activo) return
+
+      if (!Array.isArray(datos)) {
+        throw new Error(`La respuesta de ${ruta} no contiene una lista válida`)
+      }
+
+      actualizar(datos)
+    } catch (error) {
+      if (!activo || error.name === 'AbortError') return
+
+      console.error(`Error al cargar ${ruta}:`, error)
+      mostrarNotificacion(error.message, 'error')
     }
-    return response.json()
-  })
-  .then((data) => {
-    setEvidencias(data)
-  })
-  .catch((error) => {
-    console.error('Error al obtener evidencias:', error)
-  })
-fetch(`${API_URL}/departamentos`, {
-  headers: encabezadosAuth
-})
-  .then((response) => {
-    if (!response.ok) {
-      throw new Error('No se pudieron obtener los departamentos')
-    }
-    return response.json()
-  })
-  .then((data) => {
-    setDepartamentos(data)
-  })
-  .catch((error) => {
-    console.error('Error al obtener departamentos:', error)
-  })
+  }
+
+  cargar('/obligaciones', setObligaciones)
+  cargar('/auditorias', setAuditorias)
+  cargar('/controles', setControles)
+  cargar('/riesgos', setRiesgos)
+  cargar('/alertas', setAlertas)
+  cargar('/normativas', setNormativas)
+  cargar('/indicadores', setIndicadores)
+
+  if (esAdministrador) {
+    cargar('/roles', setRoles)
+    cargar('/usuarios', setUsuarios)
+  }
+
+  cargar('/evidencias', setEvidencias)
+  cargar('/departamentos', setDepartamentos)
+
+  return () => {
+    activo = false
+    controlador.abort()
+  }
 }, [token, esAdministrador])
 const iniciarSesion = async (e) => {
   e.preventDefault()
@@ -299,9 +267,15 @@ const iniciarSesion = async (e) => {
    })
 })
   if (!respuesta.ok) {
-    setErrorLogin('Correo o contraseña incorrectos')
+    if (respuesta.status === 401) {
+      setErrorLogin('Correo o contraseña incorrectos')
+    } else if (respuesta.status === 422) {
+      setErrorLogin(await leerError(respuesta))
+    } else {
+      setErrorLogin('No se pudo iniciar sesión. Inténtalo nuevamente más tarde.')
+    }
     return
-}
+  }
 const datos = await respuesta.json()
 const respuestaPerfil = await fetch(`${API_URL}/auth/verificar`, {
   headers: {
@@ -309,9 +283,15 @@ const respuestaPerfil = await fetch(`${API_URL}/auth/verificar`, {
   }
 })
 if (!respuestaPerfil.ok) {
-  setErrorLogin('No se pudieron verificar los permisos del usuario')
-  return
-}
+    if (respuestaPerfil.status === 404) {
+      setErrorLogin('No se encontró el usuario asociado a esta sesión')
+    } else if (respuestaPerfil.status === 401) {
+      setErrorLogin('No se pudo verificar la sesión. Inicia sesión nuevamente.')
+    } else {
+      setErrorLogin('No se pudieron verificar los permisos del usuario')
+    }
+    return
+  }
 const perfil = await respuestaPerfil.json()
 setEsAdministrador(perfil.es_administrador === true)
 const rolActual = (perfil.rol || '').trim().toLowerCase()
@@ -320,7 +300,7 @@ setToken(datos.access_token)
 setContrasenaLogin('')
   } catch (error) {
     console.error('Error al iniciar sesión:', error)
-    setErrorLogin('No se pudo conectar con el servidor')
+    setErrorLogin('No fue posible establecer conexión con el servidor. Verifica tu conexión e inténtalo nuevamente.')
   }
 }
 const cerrarSesion = () => {
@@ -348,7 +328,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-    throw new Error('No se pudo eliminar la obligación')
+    throw new Error(await leerError(respuesta))
 }
   setObligaciones((anteriores) =>
     anteriores.filter((obligacion) => obligacion.id !== id)
@@ -356,7 +336,7 @@ const respuesta = await fetch(
     mostrarNotificacion('Obligación eliminada correctamente', 'exito')
   } catch (error) {
     console.error(error)
-    mostrarNotificacion('Ocurrió un error al eliminar la obligación', 'error')
+    mostrarNotificacion(error.message, 'error')
 }
 }
 const eliminarAuditoria = async (id) => {
@@ -375,7 +355,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-    throw new Error('No se pudo eliminar la auditoría')
+    throw new Error(await leerError(respuesta))
 }
 setAuditorias((anteriores) =>
   anteriores.filter((auditoria) => auditoria.id !== id)
@@ -383,7 +363,7 @@ setAuditorias((anteriores) =>
 mostrarNotificacion('Auditoría eliminada correctamente', 'exito')
   } catch (error) {
     console.error(error)
-    mostrarNotificacion('Ocurrió un error al eliminar la auditoría', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const crearObligacion = async () => {
@@ -407,8 +387,7 @@ headers: {
 }
   )
 if (!respuesta.ok) {
-const detalle = await respuesta.text()
-    throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const obligacionCreada = await respuesta.json()
     setObligaciones((anteriores) => [
@@ -427,7 +406,7 @@ const obligacionCreada = await respuesta.json()
     mostrarNotificacion('Obligación registrada correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear obligación:', error)
-    mostrarNotificacion('No se pudo registrar la obligación. Revisa la consola.', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const guardarEdicionObligacion = async () => {
@@ -450,7 +429,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-    throw new Error('No se pudo actualizar la obligación')
+    throw new Error(await leerError(respuesta))
 }
 const obligacionActualizada = await respuesta.json()
   setObligaciones((anteriores) =>
@@ -464,7 +443,7 @@ const obligacionActualizada = await respuesta.json()
     mostrarNotificacion('Obligación actualizada correctamente', 'exito')
   } catch (error) {
   console.error(error)
-    mostrarNotificacion('Ocurrió un error al actualizar la obligación', 'error')
+    mostrarNotificacion(error.message, 'error')
  }
 }
 const guardarEdicionAuditoria = async () => {
@@ -484,8 +463,7 @@ const respuesta = await fetch(
   }
 )
 if (!respuesta.ok) {
-const detalle = await respuesta.text()
-  throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const auditoriaActualizada = await respuesta.json()
   setAuditorias((anteriores) =>
@@ -499,7 +477,7 @@ const auditoriaActualizada = await respuesta.json()
     mostrarNotificacion('Auditoría actualizada correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar auditoría:', error)
-    mostrarNotificacion('Ocurrió un error al actualizar la auditoría', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const crearAuditoria = async () => {
@@ -520,8 +498,7 @@ const respuesta = await fetch(
   }
 )
 if (!respuesta.ok) {
-const detalle = await respuesta.text()
-      throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const auditoriaCreada = await respuesta.json()
   setAuditorias((anteriores) => [
@@ -536,7 +513,7 @@ const auditoriaCreada = await respuesta.json()
     mostrarNotificacion('Auditoría creada correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear auditoría:', error)
-    mostrarNotificacion('Ocurrió un error al crear la auditoría', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const guardarEdicionControl = async () => {
@@ -556,8 +533,7 @@ const respuesta = await fetch(
   }
 )
     if (!respuesta.ok) {
-const detalle = await respuesta.text()
-    throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const controlActualizado = await respuesta.json()
    setControles((anteriores) =>
@@ -571,7 +547,7 @@ const controlActualizado = await respuesta.json()
     mostrarNotificacion('Control actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar control:', error)
-    mostrarNotificacion('Ocurrió un error al actualizar el control', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const eliminarControl = async (id) => {
@@ -588,10 +564,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const datosError = await respuesta.json()
-  throw new Error(
-    datosError.detail || 'No se pudo eliminar el control'
-  )
+throw new Error(await leerError(respuesta))
 }
   setControles((anteriores) =>
   anteriores.filter((control) => control.id !== id)
@@ -620,8 +593,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-  throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const controlCreado = await respuesta.json()
 setControles((anteriores) => [
@@ -637,7 +609,7 @@ setNuevoControl({
     mostrarNotificacion('Control creado correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear control:', error)
-    mostrarNotificacion('Ocurrió un error al crear el control', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const guardarEdicionRiesgo = async () => {
@@ -661,8 +633,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-      throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const riesgoActualizado = await respuesta.json()
    setRiesgos((anteriores) =>
@@ -676,7 +647,7 @@ const riesgoActualizado = await respuesta.json()
     mostrarNotificacion('Riesgo actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar riesgo:', error)
-    mostrarNotificacion('Ocurrió un error al actualizar el riesgo', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const eliminarRiesgo = async (id) => {
@@ -693,10 +664,7 @@ const respuesta = await fetch(
   }
 )
     if (!respuesta.ok) {
-const datosError = await respuesta.json()
-      throw new Error(
-        datosError.detail || 'No se pudo eliminar el riesgo'
-    )
+throw new Error(await leerError(respuesta))
 }
    setRiesgos((anteriores) =>
    anteriores.filter((riesgo) => riesgo.id !== id)
@@ -725,10 +693,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const datosError = await respuesta.json()
-    throw new Error(
-        JSON.stringify(datosError.detail || 'No se pudo crear el riesgo')
-  )
+throw new Error(await leerError(respuesta))
 }
 const riesgoCreado = await respuesta.json()
     setRiesgos((anteriores) => [
@@ -745,7 +710,7 @@ const riesgoCreado = await respuesta.json()
     mostrarNotificacion('Riesgo creado correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear riesgo:', error)
-    mostrarNotificacion('Ocurrió un error al crear el riesgo', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const guardarEdicionAlerta = async () => {
@@ -767,8 +732,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-    throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const alertaActualizada = await respuesta.json()
    setAlertas((anteriores) =>
@@ -782,7 +746,7 @@ const alertaActualizada = await respuesta.json()
     mostrarNotificacion('Alerta actualizada correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar alerta:', error)
-    mostrarNotificacion('Ocurrió un error al actualizar la alerta', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const eliminarAlerta = async (id) => {
@@ -799,10 +763,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const datosError = await respuesta.json()
-  throw new Error(
-      datosError.detail || 'No se pudo eliminar la alerta'
-  )
+throw new Error(await leerError(respuesta))
 }
     setAlertas((anteriores) =>
     anteriores.filter((alerta) => alerta.id !== id)
@@ -831,8 +792,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-  throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const alertaCreada = await respuesta.json()
    setAlertas((anteriores) => [
@@ -849,7 +809,7 @@ const alertaCreada = await respuesta.json()
     mostrarNotificacion('Alerta creada correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear alerta:', error)
-    mostrarNotificacion('Ocurrió un error al crear la alerta', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const crearDepartamento = async () => {
@@ -870,8 +830,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-  throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const respuestaLista = await fetch(
   `${API_URL}/departamentos`,
@@ -880,7 +839,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-  throw new Error('No se pudo actualizar la lista de departamentos')
+  throw new Error(await leerError(respuestaLista))
 }
 const listaActualizada = await respuestaLista.json()
     setDepartamentos(listaActualizada)
@@ -893,7 +852,7 @@ const listaActualizada = await respuestaLista.json()
     mostrarNotificacion('Departamento registrado correctamente', 'exito')
   } catch (error) {
     console.error('Error al crear departamento:', error)
-    mostrarNotificacion('Ocurrió un error al registrar el departamento', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const guardarEdicionDepartamento = async () => {
@@ -919,8 +878,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-  throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const respuestaLista = await fetch(
   `${API_URL}/departamentos`,
@@ -929,7 +887,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-  throw new Error('No se pudo actualizar la lista')
+  throw new Error(await leerError(respuestaLista))
 }
 const listaActualizada = await respuestaLista.json()
     setDepartamentos(listaActualizada)
@@ -937,7 +895,7 @@ const listaActualizada = await respuestaLista.json()
     mostrarNotificacion('Departamento actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar departamento:', error)
-    mostrarNotificacion('No se pudo actualizar el departamento', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const eliminarIndicador = async (id) => {
@@ -954,8 +912,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-      throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const respuestaLista = await fetch(
   `${API_URL}/indicadores`,
@@ -964,7 +921,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-    throw new Error('No se pudo actualizar la lista de indicadores')
+    throw new Error(await leerError(respuestaLista))
     }
 const listaActualizada = await respuestaLista.json()
     setIndicadores(listaActualizada)
@@ -974,7 +931,7 @@ const listaActualizada = await respuestaLista.json()
     mostrarNotificacion('Indicador eliminado correctamente', 'exito')
   } catch (error) {
     console.error('Error al eliminar indicador:', error)
-    mostrarNotificacion('No se pudo eliminar el indicador. Revisa la consola.', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const actualizarIndicador = async () => {
@@ -1012,8 +969,7 @@ const respuesta = await fetch(
   }
 )
    if (!respuesta.ok) {
-const detalle = await respuesta.text()
-    throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const respuestaLista = await fetch(
   `${API_URL}/indicadores`,
@@ -1022,7 +978,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-      throw new Error('No se pudo actualizar la lista de indicadores')
+      throw new Error(await leerError(respuestaLista))
     }
 const listaActualizada = await respuestaLista.json()
     setIndicadores(listaActualizada)
@@ -1030,7 +986,7 @@ const listaActualizada = await respuestaLista.json()
     mostrarNotificacion('Indicador actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar indicador:', error)
-    mostrarNotificacion('No se pudo actualizar el indicador. Revisa la consola.', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const eliminarRol = async (id) => {
@@ -1047,10 +1003,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const datosError = await respuesta.json().catch(() => ({}))
-    throw new Error(
-      datosError.detail || 'No se pudo eliminar el rol'
-  )
+throw new Error(await leerError(respuesta))
 }
   setRoles((anteriores) =>
     anteriores.filter((rol) => rol.id !== id)
@@ -1086,8 +1039,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-    throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const respuestaLista = await fetch(
   `${API_URL}/roles`,
@@ -1096,7 +1048,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-    throw new Error('No se pudo actualizar la lista de roles')
+    throw new Error(await leerError(respuestaLista))
 }
 const listaActualizada = await respuestaLista.json()
     setRoles(listaActualizada)
@@ -1104,7 +1056,7 @@ const listaActualizada = await respuestaLista.json()
     mostrarNotificacion('Rol actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar rol:', error)
-    mostrarNotificacion('No se pudo actualizar el rol. Revisa la consola.', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const eliminarUsuario = async (id) => {
@@ -1121,7 +1073,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-    throw new Error('Error al eliminar el usuario')
+    throw new Error(await leerError(respuesta))
 }
 const respuestaLista = await fetch(
   `${API_URL}/usuarios`,
@@ -1130,14 +1082,14 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-    throw new Error('Error al actualizar la lista de usuarios')
+    throw new Error(await leerError(respuestaLista))
 }
 const datos = await respuestaLista.json()
     setUsuarios(datos)
     mostrarNotificacion('Usuario eliminado correctamente', 'exito')
   } catch (error) {
     console.error('Error al eliminar usuario:', error)
-    mostrarNotificacion('No se pudo eliminar el usuario', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const actualizarUsuario = async () => {
@@ -1165,7 +1117,7 @@ const respuesta = await fetch(
   }
 )
     if (!respuesta.ok) {
-      throw new Error('Error al actualizar el usuario')
+      throw new Error(await leerError(respuesta))
     }
 const respuestaLista = await fetch(
   `${API_URL}/usuarios`,
@@ -1174,7 +1126,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-    throw new Error('Error al actualizar la lista de usuarios')
+    throw new Error(await leerError(respuestaLista))
 }
 const datos = await respuestaLista.json()
     setUsuarios(datos)
@@ -1182,7 +1134,7 @@ const datos = await respuestaLista.json()
     mostrarNotificacion('Usuario actualizado correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar usuario:', error)
-    mostrarNotificacion('No se pudo actualizar el usuario', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const crearUsuario = async () => {
@@ -1205,8 +1157,7 @@ const respuesta = await fetch(`${API_URL}/usuarios`, {
     })
 
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-    throw new Error(detalle)
+throw new Error(await leerError(respuesta))
     }
 const respuestaLista = await fetch(
   `${API_URL}/usuarios`,
@@ -1215,7 +1166,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-    throw new Error('No se pudo actualizar la lista de usuarios')
+    throw new Error(await leerError(respuestaLista))
     }
 const listaActualizada = await respuestaLista.json()
     setUsuarios(listaActualizada)
@@ -1232,7 +1183,7 @@ const listaActualizada = await respuestaLista.json()
     mostrarNotificacion('Usuario registrado correctamente', 'exito')
   } catch (error) {
     console.error('Error al registrar usuario:', error)
-    mostrarNotificacion('No se pudo registrar el usuario. Revisa la consola.', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const crearRol = async () => {
@@ -1253,8 +1204,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-    throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const respuestaLista = await fetch(
   `${API_URL}/roles`,
@@ -1263,7 +1213,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-    throw new Error('No se pudo actualizar la lista de roles')
+    throw new Error(await leerError(respuestaLista))
 }
 const listaActualizada = await respuestaLista.json()
     setRoles(listaActualizada)
@@ -1276,7 +1226,7 @@ const listaActualizada = await respuestaLista.json()
 
   } catch (error) {
     console.error('Error al registrar rol:', error)
-    mostrarNotificacion('No se pudo registrar el rol. Revisa la consola.', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const crearIndicador = async () => {
@@ -1310,8 +1260,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-   throw new Error(detalle)
+throw new Error(await leerError(respuesta))
     }
 const respuestaLista = await fetch(
   `${API_URL}/indicadores`,
@@ -1320,7 +1269,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-    throw new Error('No se pudo actualizar la lista de indicadores')
+    throw new Error(await leerError(respuestaLista))
     }
 const listaActualizada = await respuestaLista.json()
     setIndicadores(listaActualizada)
@@ -1337,7 +1286,7 @@ const listaActualizada = await respuestaLista.json()
     mostrarNotificacion('Indicador registrado correctamente', 'exito')
   } catch (error) {
     console.error('Error al registrar indicador:', error)
-    mostrarNotificacion('No se pudo registrar el indicador. Revisa la consola.', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const crearEvidencia = async () => {
@@ -1361,8 +1310,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-  throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const respuestaLista = await fetch(
   `${API_URL}/evidencias`,
@@ -1371,7 +1319,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-  throw new Error('No se pudo actualizar la lista de evidencias')
+  throw new Error(await leerError(respuestaLista))
 }
 const listaActualizada = await respuestaLista.json()
     setEvidencias(listaActualizada)
@@ -1390,7 +1338,7 @@ const listaActualizada = await respuestaLista.json()
     mostrarNotificacion('Evidencia registrada correctamente', 'exito')
   } catch (error) {
     console.error('Error al registrar evidencia:', error)
-    mostrarNotificacion('No se pudo registrar la evidencia. Revisa la consola.', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const guardarEdicionEvidencia = async () => {
@@ -1415,8 +1363,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const detalle = await respuesta.text()
-  throw new Error(detalle)
+throw new Error(await leerError(respuesta))
 }
 const respuestaLista = await fetch(
   `${API_URL}/evidencias`,
@@ -1425,7 +1372,7 @@ const respuestaLista = await fetch(
   }
 )
   if (!respuestaLista.ok) {
-  throw new Error('No se pudo actualizar la lista de evidencias')
+  throw new Error(await leerError(respuestaLista))
 }
 const listaActualizada = await respuestaLista.json()
     setEvidencias(listaActualizada)
@@ -1433,7 +1380,7 @@ const listaActualizada = await respuestaLista.json()
     mostrarNotificacion('Evidencia actualizada correctamente', 'exito')
   } catch (error) {
     console.error('Error al actualizar evidencia:', error)
-    mostrarNotificacion('No se pudo actualizar la evidencia. Revisa la consola.', 'error')
+    mostrarNotificacion(error.message, 'error')
   }
 }
 const eliminarEvidencia = async (id) => {
@@ -1450,10 +1397,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const datosError = await respuesta.json().catch(() => ({}))
-  throw new Error(
-    datosError.detail || 'No se pudo eliminar la evidencia'
-  )
+throw new Error(await leerError(respuesta))
 }
     setEvidencias((anteriores) =>
       anteriores.filter((evidencia) => evidencia.id !== id)
@@ -1479,10 +1423,7 @@ const respuesta = await fetch(
   }
 )
   if (!respuesta.ok) {
-const datosError = await respuesta.json().catch(() => ({}))
-  throw new Error(
-      datosError.detail || 'No se pudo eliminar el departamento'
-  )
+throw new Error(await leerError(respuesta))
 }
   setDepartamentos((anteriores) =>
     anteriores.filter((departamento) => departamento.id !== id)
