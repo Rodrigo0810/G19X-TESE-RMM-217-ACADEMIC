@@ -309,3 +309,200 @@ sin conservar registros de ejemplo.
 Los resultados respaldan las correcciones realizadas,
 aunque la reproduccion completa desde cero con los
 cambios definitivos sigue pendiente de comprobacion.
+---
+
+## 11. Revision 8 - Verificacion final desde clon limpio
+
+### 11.1 Identificacion
+
+- Fecha de verificacion: 05/11/2026.
+- Repositorio: Rodrigo0810/G19X-TESE-RMM-217-ACADEMIC.
+- Rama verificada: main.
+- Commit verificado: 104ce0b.
+- Clon final: C:\Users\rodri\Prueba_Limpia_Dashboard_Final_2026.
+- Base de datos independiente: compliance_dashboard_final_2026.
+- Usuario PostgreSQL independiente: dashboard_final_2026.
+- Backend de pruebas: http://127.0.0.1:8001.
+- Frontend de pruebas: http://127.0.0.1:5174.
+
+Esta revision complementa la Revision 7 y no reemplaza
+las evidencias historicas de la instalacion anterior.
+
+### 11.2 Preparacion del entorno
+
+Se realizo una nueva clonacion desde GitHub utilizando
+el commit 104ce0b, sin reutilizar el clon historico.
+
+Se creo un entorno virtual Python independiente y se
+instalaron las dependencias del backend.
+
+Se instalaron las dependencias del frontend mediante
+npm ci, sin reutilizar node_modules del proyecto original.
+
+Versiones comprobadas:
+
+- Python: 3.14.7.
+- Node.js: 24.20.0.
+- npm: 11.19.0.
+- PostgreSQL: 18.6.
+
+El analisis estatico con Oxlint finalizo sin errores
+ni advertencias.
+
+La compilacion de produccion con Vite fue satisfactoria
+y proceso 596 modulos.
+
+Se instalo httpx2==2.16.0 exclusivamente en el entorno
+virtual del clon para ejecutar pruebas HTTP con TestClient.
+Esta dependencia adicional no se incorporo al archivo
+requirements.txt del repositorio.
+
+### 11.3 Base de datos aislada
+
+Se creo el usuario dashboard_final_2026 y la base
+compliance_dashboard_final_2026.
+
+Se ejecuto database/schema.sql correctamente y se
+verifico la creacion de 11 tablas.
+
+Se ejecuto database/data.sql correctamente y se
+cargaron 24 registros de ejemplo antes de crear
+los usuarios de prueba.
+
+Los registros iniciales incluyeron:
+
+- 3 departamentos.
+- 4 roles.
+- 2 normativas.
+- 3 obligaciones.
+- 2 auditorias.
+- 2 controles.
+- 2 evidencias.
+- 2 riesgos.
+- 3 indicadores.
+- 1 alerta.
+- 0 usuarios antes de crear las cuentas de prueba.
+
+Posteriormente se creo un administrador y un usuario
+Auditor para verificar autenticacion y autorizacion.
+
+Los datos de ejemplo se conservaron exclusivamente
+en la base independiente para las pruebas funcionales.
+
+No se utilizo la base original compliance_dashboard
+para estas inserciones.
+
+### 11.4 Backend y autenticacion
+
+La aplicacion FastAPI se importo correctamente y
+genero un esquema OpenAPI con 25 rutas documentadas.
+
+Se verificaron respuestas HTTP 401 para los
+11 modulos protegidos sin autenticacion.
+
+El administrador inicio sesion correctamente y pudo
+consultar los modulos administrativos.
+
+El usuario Auditor inicio sesion correctamente y
+recibio HTTP 403 al consultar Usuarios y Roles.
+
+No se incluyen contrasenas, tokens ni secretos
+en esta bitacora.
+
+### 11.5 Dashboard e indicadores
+
+Se comprobaron los siguientes resultados en
+PostgreSQL, API e interfaz:
+
+- Obligaciones registradas: 3.
+- Obligaciones vencidas: 1.
+- Obligaciones proximas a vencer: 1.
+- Porcentaje de cumplimiento: 0 %.
+
+La obligacion ID 1 estaba Pendiente, con fecha
+limite 10/11/2026.
+
+La obligacion ID 2 estaba En progreso, con fecha
+limite 20/11/2026.
+
+La obligacion ID 3 estaba Vencida, con fecha
+limite 31/10/2026.
+
+Las alertas visuales identificaron correctamente
+la obligacion vencida y la proxima a vencer.
+
+### 11.6 Verificaciones visuales
+
+Se realizaron comprobaciones favorables de:
+
+- Obligaciones y alertas de vencimiento.
+- Evidencias y estados Pendiente, Validada y Rechazada.
+- Usuarios y nombres de roles.
+- Departamentos.
+- Auditorias.
+- Controles.
+- Riesgos.
+- Alertas.
+- Normativas.
+- Indicadores.
+- Restricciones visuales del usuario Auditor.
+- Proteccion visual tras cerrar sesion.
+
+Estas pruebas comprobaron principalmente carga,
+visualizacion, navegacion y controles disponibles.
+
+No constituyen pruebas exhaustivas de todas
+las operaciones CRUD de cada modulo.
+
+### 11.7 Comunicacion CORS
+
+Se ejecutaron solicitudes preflight OPTIONS:
+
+- Origen permitido http://127.0.0.1:5174:
+  HTTP 200 y cabecera Access-Control-Allow-Origin
+  con el origen esperado.
+- Origen no permitido http://localhost:9999:
+  HTTP 400 y sin cabecera Access-Control-Allow-Origin.
+
+Los resultados fueron los esperados para
+los dos origenes probados.
+
+### 11.8 Integridad de repositorios
+
+Se verifico que el repositorio original y el
+clon final permanecian en main y en 104ce0b.
+
+Al finalizar el paso 440, ninguno presentaba
+modificaciones en archivos versionados.
+
+Los archivos de respaldo preexistentes del
+repositorio original se conservaron intactos.
+
+El archivo .env del clon permanecio fuera
+del control de versiones.
+
+### 11.9 Limitaciones
+
+- No se midio el tiempo total de instalacion.
+- No se ejecutaron todas las operaciones CRUD
+  de cada modulo mediante pruebas automatizadas.
+- Las pruebas CORS cubrieron dos origenes concretos.
+- La presentacion del nombre de un departamento
+  asignado a un usuario requiere evidencia especifica.
+- La aprobacion final depende de una nueva evaluacion
+  de TODO Academy y no puede garantizarse aqui.
+
+### 11.10 Conclusion
+
+La instalacion limpia final del commit 104ce0b
+se reprodujo en un clon independiente, con
+dependencias propias y una base PostgreSQL aislada.
+
+Las pruebas realizadas proporcionaron evidencia
+favorable de instalacion, autenticacion, permisos,
+carga de datos, indicadores, modulos principales
+y comunicacion CORS.
+
+La verificacion no modifica las conclusiones
+historicas de la Revision 7 y no equivale a
+una certificacion integral de todas las funciones.
