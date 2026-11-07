@@ -492,6 +492,43 @@ El programa solicitará el nombre, correo electrónico y contraseña del adminis
 
 Por seguridad, el script comprueba si ya existe un usuario con el rol Administrador. Si encuentra uno, no creará otro mediante este procedimiento.
 
+## Cuentas de prueba
+
+Esta sección explica cómo preparar una cuenta de prueba para cada uno de los cuatro roles del Dashboard Ejecutivo de Cumplimiento Normativo: Administrador, Compliance, Auditor y Directivo.
+
+Los scripts `database/schema.sql` y `database/data.sql` preparan la estructura y los datos de ejemplo, pero no crean automáticamente las cuatro cuentas de acceso. Por ello, es necesario crear el administrador inicial y después registrar los otros tres usuarios desde la interfaz.
+
+### Cómo crear las cuatro cuentas
+
+1. Completa la instalación del sistema, configura PostgreSQL y ejecuta `database/schema.sql`. Si necesitas registros de demostración, utiliza `database/data.sql` únicamente en una base de prueba.
+2. Desde la carpeta `backend`, con el entorno virtual activo y el archivo `.env` configurado, ejecuta `python crear_admin.py`.
+3. Introduce el nombre, el correo y una contraseña segura para el primer **Administrador**. El script solicita la contraseña de forma oculta y no permite crear otro administrador inicial si ya existe uno.
+4. Inicia el backend con `python -m uvicorn main:app --reload` y el frontend con `npm run dev` desde la carpeta `frontend`.
+5. Abre `http://localhost:5173` e inicia sesión con la cuenta de Administrador.
+6. En el menú **Usuarios**, utiliza el formulario de nuevo usuario para registrar una cuenta con el rol **Compliance**, otra con el rol **Auditor** y otra con el rol **Directivo**. Selecciona el rol correspondiente, completa los campos obligatorios y guarda cada registro.
+7. Cierra sesión e inicia sesión por separado con cada cuenta para comprobar qué opciones aparecen y qué operaciones permite realizar el sistema.
+
+### Cuentas y permisos esperados
+
+Los siguientes correos son ejemplos ficticios. Cada persona que realice las pruebas debe elegir y configurar sus propias contraseñas; no se incluyen contraseñas reales en esta documentación.
+
+| Rol | Correo de ejemplo | Cómo se crea | Qué puede hacer | Qué no debe poder hacer |
+|---|---|---|---|---|
+| Administrador | `admin@example.com` | Ejecutando `python crear_admin.py` | Consultar, crear, editar y eliminar registros; administrar Usuarios y Roles. | No puede eliminar o desactivar al último administrador activo. |
+| Compliance | `compliance@example.com` | Administrador: **Usuarios → Nuevo usuario**, seleccionar Compliance. | Consultar, crear, editar y eliminar registros en los nueve módulos operativos autorizados. | No puede administrar Usuarios ni Roles. |
+| Auditor | `auditor@example.com` | Administrador: **Usuarios → Nuevo usuario**, seleccionar Auditor. | Consultar el dashboard y los módulos autorizados. | No puede crear, editar ni eliminar registros; tampoco administrar Usuarios ni Roles. |
+| Directivo | `directivo@example.com` | Administrador: **Usuarios → Nuevo usuario**, seleccionar Directivo. | Consultar el dashboard, indicadores y módulos autorizados. | No puede crear, editar ni eliminar registros; tampoco administrar Usuarios ni Roles. |
+
+### Qué debe observar el evaluador
+
+- **Administrador:** puede visualizar las secciones **Usuarios** y **Roles**, así como las acciones de administración.
+- **Compliance:** puede utilizar las acciones de creación, edición y eliminación de los módulos operativos, pero no debe acceder a la administración de Usuarios y Roles.
+- **Auditor y Directivo:** deben poder consultar información, sin botones de crear, editar ni eliminar. Tampoco deben aparecer las opciones **Usuarios** y **Roles** en su menú.
+- **Seguridad del backend:** si Auditor o Directivo intentan modificar registros mediante la API, las operaciones protegidas deben responder con HTTP `403 Forbidden`. Las rutas administrativas también deben rechazar los roles no autorizados.
+
+Los nueve módulos operativos protegidos son Obligaciones, Auditorías, Controles, Evidencias, Riesgos, Alertas, Normativas, Departamentos e Indicadores. Consulta la [matriz de permisos por rol](#matriz-de-permisos-por-rol---corte-5) para revisar los permisos y las pruebas documentadas.
+
+**Importante:** estas cuentas son ejemplos para reproducir pruebas en una instalación local. No se deben publicar contraseñas, tokens, claves JWT ni archivos `.env` en el repositorio.
 ## Uso
 
 Esta sección explica cómo ingresar por primera vez al Dashboard Ejecutivo de Cumplimiento Normativo, recorrer el tablero y comprobar sus funcionalidades. Antes de comenzar, se deben completar la instalación, la configuración de PostgreSQL y la preparación del backend y frontend descritas anteriormente.
