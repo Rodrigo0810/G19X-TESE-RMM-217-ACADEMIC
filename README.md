@@ -33,15 +33,103 @@ También incorpora un panel ejecutivo con indicadores y gráficas que facilitan 
 - `backend/.env.example`: plantilla de configuración del backend.
 - `README.md`: documentación principal del proyecto.
 
+## Instalación rápida desde cero
+
+Esta guía resume el orden de instalación para Windows con PowerShell.
+Ejecuta los pasos desde la raíz del repositorio, salvo que se indique otra carpeta.
+Para explicaciones adicionales, consulta las secciones detalladas enlazadas.
+
+1. **Preparar PostgreSQL.** Instala PostgreSQL, crea un usuario con contraseña y crea la base de datos `compliance_dashboard`, asignando los permisos necesarios al usuario. Consulta [Configuración de la base de datos](#configuracion-de-la-base-de-datos).
+
+2. **Crear el esquema y cargar datos opcionales.** Ejecuta `database/schema.sql` sobre `compliance_dashboard`. Para una instalación de prueba, puedes ejecutar después `database/data.sql` para cargar registros de ejemplo. No cargues datos de prueba en una base de producción. Consulta [Preparación inicial](#preparacion-inicial).
+
+   ```powershell
+   psql -U TU_USUARIO -d compliance_dashboard -v ON_ERROR_STOP=1 -f database/schema.sql
+   # Solo para instalaciones de prueba:
+   psql -U TU_USUARIO -d compliance_dashboard -v ON_ERROR_STOP=1 -f database/data.sql
+   ```
+
+3. **Configurar el backend.** Copia `backend/.env.example` como `backend/.env` y completa las variables de PostgreSQL y autenticación. **`DB_PASSWORD` es obligatorio y no puede quedar vacío**: `backend/database.py` impide iniciar la aplicación si falta. Configura también `DB_USER`, `DB_NAME` y una clave `JWT_SECRET_KEY` segura. El archivo `.env` no debe subirse a Git. Consulta [Variables de conexión PostgreSQL](#variables-de-conexion-postgresql) y [Configuración de CORS para desarrollo local](#configuracion-de-cors-para-desarrollo-local).
+
+   ```powershell
+   Copy-Item backend/.env.example backend/.env
+   # Edita backend/.env con tus propios valores antes de continuar.
+   ```
+
+4. **Instalar las dependencias del backend.** Crea y activa el entorno virtual, e instala las dependencias. Consulta [Instalación y ejecución del backend](#instalacion-y-ejecucion-del-backend).
+
+   ```powershell
+   cd backend
+   python -m venv venv
+   .\venv\Scripts\Activate.ps1
+   python -m pip install -r requirements.txt
+   ```
+
+5. **Crear el primer administrador.** Con PostgreSQL preparado y el entorno virtual activo, ejecuta el asistente y proporciona los datos solicitados. Consulta [Creación del primer administrador](#creacion-del-primer-administrador).
+
+   ```powershell
+   python crear_admin.py
+   ```
+
+6. **Iniciar FastAPI.** Mantén abierta esta terminal para ejecutar el servidor. Consulta [Comandos para preparar e iniciar el backend](#comandos-para-preparar-e-iniciar-el-backend).
+
+   ```powershell
+   python -m uvicorn main:app --reload
+   ```
+
+   La documentación de la API estará disponible en `http://127.0.0.1:8000/docs`.
+
+7. **Instalar e iniciar el frontend.** Abre una segunda terminal en la raíz del repositorio. Si necesitas configurar la URL de la API, crea `frontend/.env.local` con `VITE_API_URL=http://127.0.0.1:8000`. Después instala las dependencias e inicia Vite. Consulta [Instalación y ejecución del frontend](#instalacion-y-ejecucion-del-frontend) y [Configuración de la URL del backend](#configuracion-de-la-url-del-backend).
+
+   ```powershell
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+8. **Abrir la aplicación.** Entra a `http://localhost:5173` e inicia sesión con el administrador creado en el paso 5. Consulta [Uso](#uso).
+
+Para una instalación independiente y sus evidencias de validación, consulta [la bitácora técnica](docs/instalacion-limpia.md).
+
 ## Estado del proyecto
 
-El Dashboard Ejecutivo de Cumplimiento Normativo cuenta con sus principales funcionalidades implementadas y se encuentra en etapa de preparación para la entrega académica.
+El Dashboard Ejecutivo de Cumplimiento Normativo cuenta con
+una aplicación web integrada mediante React, FastAPI y PostgreSQL,
+con autenticación JWT, permisos por rol y un panel ejecutivo
+para consultar indicadores de cumplimiento normativo.
 
-Se comprobó el inicio de sesión, la seguridad mediante JWT, los permisos de administrador, el funcionamiento de los módulos de Obligaciones y Auditorías, y la creación y persistencia de controles.
+### Módulos actuales
 
-También se verificó que los indicadores reflejan correctamente la creación y eliminación de obligaciones.
+El sistema incluye los siguientes módulos:
 
-El frontend compiló correctamente con Vite 8.3.2, sin errores de compilación.
+- **Dashboard:** indicadores, métricas y gráficas de cumplimiento.
+- **Obligaciones:** registro y seguimiento de obligaciones normativas.
+- **Auditorías:** administración y consulta de auditorías.
+- **Controles:** seguimiento de controles internos.
+- **Evidencias:** registro y validación de evidencias.
+- **Riesgos:** consulta y seguimiento de riesgos.
+- **Alertas:** seguimiento de alertas y vencimientos.
+- **Normativas:** administración de disposiciones normativas.
+- **Departamentos:** organización de áreas responsables.
+- **Indicadores:** visualización de indicadores de cumplimiento.
+- **Usuarios:** administración de cuentas y accesos.
+- **Roles:** gestión de permisos según el perfil del usuario.
+
+### Estado de las verificaciones
+
+Se realizaron pruebas de instalación en un clon independiente,
+utilizando una base de datos PostgreSQL aislada.
+
+Las verificaciones incluyeron instalación de dependencias,
+compilación del frontend, autenticación, permisos HTTP 401 y 403,
+comunicación CORS, carga de datos de ejemplo y comprobaciones
+visuales de los módulos principales.
+
+Estas comprobaciones no equivalen a pruebas exhaustivas de
+todas las operaciones CRUD de cada módulo.
+
+Los procedimientos, resultados y limitaciones están documentados
+en la [bitácora técnica de instalación limpia](docs/instalacion-limpia.md).
 
 ### Seguridad implementada y verificada
 
