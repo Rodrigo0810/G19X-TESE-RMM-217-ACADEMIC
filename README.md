@@ -289,7 +289,7 @@ utilizar estos puertos alternativos.
 - Backend FastAPI configurado y en funcionamiento.
 - Conexión activa con PostgreSQL.
 
-**Nota:** Se verificó que el proyecto compila correctamente utilizando Node.js 24.20.0 y Vite 8.3.2. La compatibilidad con otras versiones no ha sido comprobada durante estas pruebas.
+**Nota:** Se verificó que el proyecto compila correctamente utilizando Node.js 24.20.0 y Vite 8.3.6. La compatibilidad con otras versiones no ha sido comprobada durante estas pruebas.
 
 ### Pasos para iniciar el frontend
 
