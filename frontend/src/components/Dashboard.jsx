@@ -208,7 +208,7 @@ return (
     cx="50%"
     cy="50%"
     outerRadius={100}
-    label={({ name, value }) => `${name}: ${value}`}
+    label={({ name, value }) => (value > 0 ? `${name}: ${value}` : "")}
 >
     {datosObligaciones.map((entrada, index) => (
     <Cell
@@ -318,7 +318,7 @@ return (
       cx="50%"
       cy="50%"
       outerRadius={100}
-      label={({ name, value }) => `${name}: ${value}`}
+      label={({ name, value }) => (value > 0 ? `${name}: ${value}` : "")}
 >
 {datosRiesgos.map((entrada, index) => (
     <Cell
